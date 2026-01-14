@@ -1,5 +1,730 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head><meta charset="utf-8"><title>Test</title></head>
-<body><h1>Test GitHub Pages OK 2</h1></body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carte Interactive Formation - SDIS47</title>
+    
+    <!-- Leaflet Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Turf.js pour géospatial -->
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+    
+    <!-- Font Awesome pour icônes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0e27;
+            color: #fff;
+            overflow: hidden;
+        }
+        
+        /* Conteneur Carte */
+        #mapContainer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1;
+            background: #1a1a2e;
+        }
+        
+        /* Panneau de Contrôle */
+        .control-panel {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            width: 380px;
+            max-height: 85vh;
+            background: rgba(15, 15, 35, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 107, 53, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            z-index: 1000;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+        
+        .control-panel h1 {
+            font-size: 20px;
+            margin-bottom: 5px;
+            color: #FF6B35;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .control-panel h1 i {
+            font-size: 24px;
+        }
+        
+        .control-panel > p {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 20px;
+        }
+        
+        .section {
+            margin-bottom: 20px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .section:last-child {
+            border-bottom: none;
+        }
+        
+        .section h3 {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #FF6B35;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .section h3 i {
+            font-size: 16px;
+        }
+        
+        label {
+            display: block;
+            font-size: 12px;
+            margin-top: 10px;
+            margin-bottom: 5px;
+            color: #ddd;
+            font-weight: 500;
+        }
+        
+        input[type="text"],
+        input[type="number"],
+        input[type="range"],
+        select {
+            width: 100%;
+            padding: 8px 12px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(255, 107, 53, 0.3);
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="range"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #FF6B35;
+            background: rgba(255, 107, 53, 0.1);
+            box-shadow: 0 0 8px rgba(255, 107, 53, 0.2);
+        }
+        
+        .slider-value {
+            display: inline-block;
+            background: #FF6B35;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            float: right;
+            margin-top: -26px;
+            margin-right: 2px;
+        }
+        
+        /* Boutons */
+        .btn {
+            display: inline-block;
+            padding: 10px 15px;
+            margin: 5px 5px 5px 0;
+            background: linear-gradient(135deg, #FF6B35 0%, #E55A2B 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 53, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn.active {
+            background: linear-gradient(135deg, #4CAF50 0%, #45A049 100%);
+            box-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
+        }
+        
+        .btn.danger {
+            background: linear-gradient(135deg, #E74C3C 0%, #C0392B 100%);
+        }
+        
+        .btn.danger:hover {
+            box-shadow: 0 8px 20px rgba(231, 76, 60, 0.4);
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        /* Indicateurs de Mode */
+        .mode-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #666;
+            margin-right: 6px;
+            animation: none;
+        }
+        
+        .mode-indicator.active {
+            background: #4CAF50;
+            animation: pulse 0.6s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.5); }
+            50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(76, 175, 80, 0); }
+        }
+        
+        /* Statistiques */
+        .stats-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 15px 0;
+        }
+        
+        .stat-item {
+            background: rgba(255, 107, 53, 0.1);
+            border: 1px solid rgba(255, 107, 53, 0.3);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #FF6B35;
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            color: #999;
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+        
+        /* Légende */
+        .legend {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(15, 15, 35, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 107, 53, 0.3);
+            padding: 15px 20px;
+            border-radius: 12px;
+            z-index: 1000;
+            font-size: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+            gap: 10px;
+        }
+        
+        .legend-color {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+        
+        .legend-item i {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* Scrollbar personnalisée */
+        .control-panel::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .control-panel::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .control-panel::-webkit-scrollbar-thumb {
+            background: rgba(255, 107, 53, 0.3);
+            border-radius: 3px;
+        }
+        
+        .control-panel::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 107, 53, 0.5);
+        }
+        
+        /* Info Box */
+        .info-box {
+            background: rgba(76, 175, 80, 0.1);
+            border-left: 3px solid #4CAF50;
+            padding: 10px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #ddd;
+            margin: 10px 0;
+            line-height: 1.5;
+        }
+        
+        .info-box i {
+            color: #4CAF50;
+            margin-right: 6px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .control-panel {
+                width: 90%;
+                max-height: 60vh;
+                left: 5% !important;
+                top: 10px !important;
+            }
+            
+            .legend {
+                bottom: 10px;
+                left: 10px;
+                right: auto;
+                font-size: 11px;
+            }
+        }
+        
+        /* Animation de chargement */
+        .loading {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="mapContainer"></div>
+    
+    <div class="control-panel">
+        <h1><i class="fas fa-map"></i> Formation Pompiers</h1>
+        <p>SDIS47 • Carte Interactive 2D/3D</p>
+        
+        <!-- Section Localisation -->
+        <div class="section">
+            <h3><i class="fas fa-location-dot"></i> Localisation</h3>
+            <label>Latitude:</label>
+            <input type="number" id="inputLat" value="44.2035" step="0.0001">
+            <label>Longitude:</label>
+            <input type="number" id="inputLng" value="0.6233" step="0.0001">
+            <button class="btn" onclick="goToLocation()">
+                <i class="fas fa-arrow-right"></i> Aller à cette position
+            </button>
+            <div class="info-box">
+                <i class="fas fa-info-circle"></i>
+                Centré sur Agen (Lot-et-Garonne)
+            </div>
+        </div>
+        
+        <!-- Section Incendies -->
+        <div class="section">
+            <h3><i class="fas fa-fire"></i> Ajouter un Incendie</h3>
+            
+            <label>Type d'incendie:</label>
+            <select id="fireType">
+                <option value="residential">🏠 Habitation</option>
+                <option value="commercial">🏢 Commerce</option>
+                <option value="wildfire">🌲 Feu de forêt</option>
+                <option value="vehicle">🚗 Véhicule</option>
+                <option value="industrial">🏭 Industriel (ICPE)</option>
+                <option value="agricultural">🌾 Agricole</option>
+            </select>
+            
+            <label>Intensité (1-5):</label>
+            <input type="range" id="fireIntensity" min="1" max="5" value="3" 
+                   oninput="updateFireIntensityDisplay(this.value)">
+            <span class="slider-value" id="intensityValue">3/5</span>
+            
+            <label>Rayon d'action (m):</label>
+            <input type="range" id="fireRadius" min="50" max="500" value="100" step="10"
+                   oninput="updateFireRadiusDisplay(this.value)">
+            <span class="slider-value" id="radiusValue">100 m</span>
+            
+            <div class="info-box">
+                <i class="fas fa-mouse"></i> Cliquez sur la carte pour placer un incendie
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn" id="fireModeBtn" onclick="toggleFireMode()">
+                    <span class="mode-indicator" id="fireModeIndicator"></span>
+                    Mode Incendie
+                </button>
+                <button class="btn danger" onclick="clearAllFires()">Effacer</button>
+            </div>
+        </div>
+        
+        <!-- Section Véhicules -->
+        <div class="section">
+            <h3><i class="fas fa-truck"></i> Ajouter un Véhicule</h3>
+            
+            <label>Type de véhicule:</label>
+            <select id="vehicleType">
+                <option value="FPT">🚒 Fourgon Pompe Tonne</option>
+                <option value="CCF">🚒 Camion Citernes Feux</option>
+                <option value="CCFS">🚒 CCFS (Structure lourde)</option>
+                <option value="VSAV">🚑 VSAV (Secours)</option>
+                <option value="VLI">🚙 VLI (Intervention légère)</option>
+                <option value="CMD">📡 Poste de Commandement</option>
+                <option value="DECA">🚒 DECA (Déploiement)</option>
+            </select>
+            
+            <div class="info-box">
+                <i class="fas fa-mouse"></i> Cliquez sur la carte pour ajouter un véhicule
+                <br><i class="fas fa-hand-fist" style="margin-right: 4px;"></i> Drag pour déplacer
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn" id="vehicleModeBtn" onclick="toggleVehicleMode()">
+                    <span class="mode-indicator" id="vehicleModeIndicator"></span>
+                    Mode Véhicule
+                </button>
+                <button class="btn danger" onclick="clearAllVehicles()">Effacer</button>
+            </div>
+        </div>
+        
+        <!-- Section Affichage -->
+        <div class="section">
+            <h3><i class="fas fa-eye"></i> Vue & Affichage</h3>
+            
+            <div class="btn-group">
+                <button class="btn" onclick="toggleBasemap()">
+                    <i class="fas fa-image"></i> Satellite
+                </button>
+                <button class="btn" onclick="resetView()">
+                    <i class="fas fa-expand"></i> Réinitialiser
+                </button>
+            </div>
+            
+            <button class="btn danger" onclick="clearAllSimulation()" style="width: 100%; margin-top: 10px;">
+                <i class="fas fa-trash"></i> EFFACER TOUTE LA SIMULATION
+            </button>
+        </div>
+        
+        <!-- Statistiques -->
+        <div class="section">
+            <h3><i class="fas fa-chart-bar"></i> Statistiques</h3>
+            <div class="stats-box">
+                <div class="stat-item">
+                    <div class="stat-number" id="fireCount">0</div>
+                    <div class="stat-label">Incendies</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="vehicleCount">0</div>
+                    <div class="stat-label">Véhicules</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Légende -->
+    <div class="legend">
+        <div class="legend-item">
+            <i class="fas fa-fire" style="color: #FF6B35;"></i>
+            <span>Incendie actif</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: rgba(255, 107, 53, 0.3); border: 2px dashed #FF6B35;"></div>
+            <span>Zone affectée</span>
+        </div>
+        <div class="legend-item">
+            <i class="fas fa-truck" style="color: #FFD700;"></i>
+            <span>Véhicule pompier</span>
+        </div>
+    </div>
+
+    <script>
+        // ============ INITIALISATION ============
+        const map = L.map('mapContainer').setView([44.2035, 0.6233], 14);
+        
+        // Couche OpenStreetMap
+        const osmLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap',
+            maxZoom: 19
+        }).addTo(map);
+        
+        // Couche Satellite (ESRI)
+        const satelliteLayer = L.tileLayer(
+            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+            {
+                attribution: '© ESRI',
+                maxZoom: 18
+            }
+        );
+        
+        // Groupes de calques
+        const fireMarkers = L.featureGroup().addTo(map);
+        const vehicleMarkers = L.featureGroup().addTo(map);
+        const fireCircles = L.featureGroup().addTo(map);
+        
+        // État
+        let isFireMode = false;
+        let isVehicleMode = false;
+        let fires = [];
+        let vehicles = [];
+        let isSatelliteMode = false;
+        
+        // ============ MODES ============
+        function toggleFireMode() {
+            isFireMode = !isFireMode;
+            isVehicleMode = false;
+            document.getElementById('fireModeBtn').classList.toggle('active');
+            document.getElementById('vehicleModeBtn').classList.remove('active');
+            document.getElementById('fireModeIndicator').classList.toggle('active');
+            document.getElementById('vehicleModeIndicator').classList.remove('active');
+            map.style.cursor = isFireMode ? 'crosshair' : 'grab';
+        }
+        
+        function toggleVehicleMode() {
+            isVehicleMode = !isVehicleMode;
+            isFireMode = false;
+            document.getElementById('vehicleModeBtn').classList.toggle('active');
+            document.getElementById('fireModeBtn').classList.remove('active');
+            document.getElementById('vehicleModeIndicator').classList.toggle('active');
+            document.getElementById('fireModeIndicator').classList.remove('active');
+            map.style.cursor = isVehicleMode ? 'crosshair' : 'grab';
+        }
+        
+        // ============ CLIC CARTE ============
+        map.on('click', function(e) {
+            if (isFireMode) addFire(e.latlng);
+            if (isVehicleMode) addVehicle(e.latlng);
+        });
+        
+        // ============ AJOUTER INCENDIE ============
+        function addFire(latlng) {
+            const fireType = document.getElementById('fireType').value;
+            const intensity = parseInt(document.getElementById('fireIntensity').value);
+            const radius = parseInt(document.getElementById('fireRadius').value);
+            const fireId = 'fire_' + Date.now();
+            
+            const fireIcons = {
+                'residential': '🏠',
+                'commercial': '🏢',
+                'wildfire': '🌲',
+                'vehicle': '🚗',
+                'industrial': '🏭',
+                'agricultural': '🌾'
+            };
+            
+            // Animation CSS
+            if (!document.getElementById('fireAnimation')) {
+                const style = document.createElement('style');
+                style.id = 'fireAnimation';
+                style.innerHTML = `
+                    @keyframes burn {
+                        0%, 100% { transform: scale(1); opacity: 1; }
+                        50% { transform: scale(1.15); opacity: 0.8; }
+                    }
+                    .fire-marker { animation: burn 0.6s infinite; }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            // Marqueur incendie
+            const fireMarker = L.marker(latlng, {
+                icon: L.divIcon({
+                    className: 'fire-marker',
+                    html: `<div style="font-size: 28px; filter: drop-shadow(0 0 4px rgba(255, 107, 53, 0.8));">🔥</div>`,
+                    iconSize: [35, 35],
+                    iconAnchor: [17, 17]
+                })
+            }).bindPopup(`
+                <div style="padding: 10px; color: #333;">
+                    <b style="color: #FF6B35;">Incendie #${fires.length + 1}</b><br>
+                    📍 Type: ${fireType}<br>
+                    💪 Intensité: ${intensity}/5<br>
+                    📏 Rayon: ${radius}m<br>
+                    <button onclick="removeFire('${fireId}')" style="margin-top: 10px; padding: 5px 10px; background: #FF6B35; color: white; border: none; border-radius: 4px; cursor: pointer;">Supprimer</button>
+                </div>
+            `, {
+                maxWidth: 250
+            }).addTo(fireMarkers);
+            
+            // Zone affectée
+            const circle = L.circle(latlng, {
+                radius: radius,
+                color: '#FF6B35',
+                fillColor: '#FF6B35',
+                fillOpacity: 0.2,
+                weight: 2,
+                dashArray: '5, 5'
+            }).addTo(fireCircles);
+            
+            fires.push({
+                id: fireId,
+                latlng: latlng,
+                type: fireType,
+                intensity: intensity,
+                radius: radius,
+                marker: fireMarker,
+                circle: circle
+            });
+            
+            updateStats();
+        }
+        
+        // ============ AJOUTER VÉHICULE ============
+        function addVehicle(latlng) {
+            const vehicleType = document.getElementById('vehicleType').value;
+            const vehicleId = 'vehicle_' + Date.now();
+            
+            const vehicleMarker = L.marker(latlng, {
+                icon: L.divIcon({
+                    className: 'vehicle-marker',
+                    html: `<div style="font-size: 26px; filter: drop-shadow(0 0 3px rgba(255, 215, 0, 0.6));">🚒</div>`,
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16],
+                    draggable: true
+                })
+            }).bindPopup(`
+                <div style="padding: 10px; color: #333;">
+                    <b style="color: #FFD700;">${vehicleType}</b><br>
+                    <button onclick="removeVehicle('${vehicleId}')" style="margin-top: 8px; padding: 5px 10px; background: #E74C3C; color: white; border: none; border-radius: 4px; cursor: pointer;">Supprimer</button>
+                </div>
+            `, {
+                maxWidth: 200
+            }).addTo(vehicleMarkers);
+            
+            vehicleMarker.dragging.enable();
+            
+            vehicles.push({
+                id: vehicleId,
+                type: vehicleType,
+                marker: vehicleMarker,
+                latlng: latlng
+            });
+            
+            updateStats();
+        }
+        
+        // ============ SUPPRESSION ============
+        window.removeFire = function(fireId) {
+            const idx = fires.findIndex(f => f.id === fireId);
+            if (idx > -1) {
+                fires[idx].marker.remove();
+                fires[idx].circle.remove();
+                fires.splice(idx, 1);
+                updateStats();
+            }
+        };
+        
+        window.removeVehicle = function(vehicleId) {
+            const idx = vehicles.findIndex(v => v.id === vehicleId);
+            if (idx > -1) {
+                vehicles[idx].marker.remove();
+                vehicles.splice(idx, 1);
+                updateStats();
+            }
+        };
+        
+        function clearAllFires() {
+            fires.forEach(f => { f.marker.remove(); f.circle.remove(); });
+            fires = [];
+            updateStats();
+        }
+        
+        function clearAllVehicles() {
+            vehicles.forEach(v => v.marker.remove());
+            vehicles = [];
+            updateStats();
+        }
+        
+        function clearAllSimulation() {
+            if (confirm('⚠️ Êtes-vous sûr ? Cela effacera TOUS les éléments de la simulation.')) {
+                clearAllFires();
+                clearAllVehicles();
+            }
+        }
+        
+        // ============ UTILITAIRES ============
+        function updateStats() {
+            document.getElementById('fireCount').textContent = fires.length;
+            document.getElementById('vehicleCount').textContent = vehicles.length;
+        }
+        
+        function goToLocation() {
+            const lat = parseFloat(document.getElementById('inputLat').value);
+            const lng = parseFloat(document.getElementById('inputLng').value);
+            map.setView([lat, lng], 14);
+        }
+        
+        function toggleBasemap() {
+            if (isSatelliteMode) {
+                map.removeLayer(satelliteLayer);
+                map.addLayer(osmLayer);
+            } else {
+                map.removeLayer(osmLayer);
+                map.addLayer(satelliteLayer);
+            }
+            isSatelliteMode = !isSatelliteMode;
+        }
+        
+        function resetView() {
+            map.setView([44.2035, 0.6233], 14);
+        }
+        
+        function updateFireIntensityDisplay(value) {
+            document.getElementById('intensityValue').textContent = value + '/5';
+        }
+        
+        function updateFireRadiusDisplay(value) {
+            document.getElementById('radiusValue').textContent = value + ' m';
+        }
+        
+        // Initialisation
+        updateStats();
+    </script>
+</body>
 </html>
