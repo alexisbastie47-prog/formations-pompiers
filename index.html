@@ -545,14 +545,31 @@
             const vehicleType = document.getElementById('vehicleType').value;
             const vehicleId = 'vehicle_' + Date.now();
             
-            const vehicleMarker = L.marker(latlng, {
-                icon: L.divIcon({
-                    className: 'vehicle-marker',
-                    html: `<div style="font-size: 26px; filter: drop-shadow(0 0 3px rgba(255, 215, 0, 0.6));">🚒</div>`,
-                    iconSize: [32, 32],
-                    iconAnchor: [16, 16],
-                    draggable: true
-                })
+           function addVehicle(latlng) {
+    const vehicleType = document.getElementById('vehicleType').value;
+    const vehicleId = 'vehicle_' + Date.now();
+
+    const vehicleIcons = {
+        FPT: '🚒',
+        CCF: '🚒',
+        CCFS: '🚒',
+        VSAV: '🚑',
+        VLI: '🚙',
+        VSR: '🛠️',   
+        CMD: '📡',
+        DECA: '🚒'
+    };
+    const iconChar = vehicleIcons[vehicleType] || '🚒';
+
+    const vehicleMarker = L.marker(latlng, {
+        icon: L.divIcon({
+            className: 'vehicle-marker',
+            html: `<div style="font-size: 26px; filter: drop-shadow(0 0 3px rgba(255, 215, 0, 0.6));">${iconChar}</div>`,
+            iconSize: [32, 32],
+            iconAnchor: [16, 16]
+        })
+    })/* … reste inchangé … */;
+}
             }).bindPopup(`
                 <div style="padding: 10px; color: #333;">
                     <b style="color: #FFD700;">${vehicleType}</b><br>
