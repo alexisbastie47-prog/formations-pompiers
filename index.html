@@ -39,9 +39,7 @@
             z-index: 1000; overflow-y: auto;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
         }
-        .control-panel.hidden {
-            display: none;
-        }
+        .control-panel.hidden { display: none; }
         .control-panel h1 {
             font-size: 20px; margin-bottom: 5px;
             color: #FF6B35;
@@ -210,9 +208,9 @@
         <div class="section">
             <h3><i class="fas fa-location-dot"></i> Localisation</h3>
             <label>Latitude:</label>
-            <input type="number" id="inputLat" value="44.2035" step="0.0001">
+            <input type="number" id="inputLat" value="44.316" step="0.0001">
             <label>Longitude:</label>
-            <input type="number" id="inputLng" value="0.6233" step="0.0001">
+            <input type="number" id="inputLng" value="0.085" step="0.0001">
             <button class="btn" onclick="goToLocation()">
                 <i class="fas fa-arrow-right"></i> Aller à cette position
             </button>
@@ -249,6 +247,7 @@
             <div class="info-box">
                 <i class="fas fa-mouse"></i>
                 Active le mode incendie puis clique sur la carte pour placer le feu.
+                <br>Pour 🌲 Feu de forêt : clique pour dessiner le contour, double-clique pour le fermer.
             </div>
             
             <div class="btn-group">
@@ -313,7 +312,6 @@
             
             <div class="info-box">
                 <i class="fas fa-mouse"></i> Active le mode véhicule puis clique sur la carte pour ajouter un engin.
-                <br><i class="fas fa-hand-fist" style="margin-right: 4px;"></i> Drag pour déplacer.
             </div>
             
             <div class="btn-group">
@@ -437,82 +435,130 @@
         let vehicles = [];
         let equipment = [];
         let isSatelliteMode = false;
+
+        // dessin feu de forêt
+        let isDrawingWildfire = false;
+        let currentWildfireLatLngs = [];
+        let currentWildfirePolyline = null;
         
         // ============ MODES ============
-function resetAllModes() {
-    isFireMode = false;
-    isAccidentMode = false;
-    isVehicleMode = false;
-    isEquipmentMode = false;
+        function resetAllModes() {
+            isFireMode = false;
+            isAccidentMode = false;
+            isVehicleMode = false;
+            isEquipmentMode = false;
 
-    ['fire','accident','vehicle','equipment'].forEach(id => {
-        const btn = document.getElementById(id + 'ModeBtn');
-        const ind = document.getElementById(id + 'ModeIndicator');
-        if (btn) btn.classList.remove('active');
-        if (ind) ind.classList.remove('active');
-    });
+            ['fire','accident','vehicle','equipment'].forEach(id => {
+                const btn = document.getElementById(id + 'ModeBtn');
+                const ind = document.getElementById(id + 'ModeIndicator');
+                if (btn) btn.classList.remove('active');
+                if (ind) ind.classList.remove('active');
+            });
+        }
 
-    // on ne touche pas au curseur Leaflet (géré par ses propres classes)
-}
+        function toggleFireMode() {
+            const newState = !isFireMode;
+            resetAllModes();
+            isFireMode = newState;
+            if (isFireMode) {
+                document.getElementById('fireModeBtn').classList.add('active');
+                document.getElementById('fireModeIndicator').classList.add('active');
+            }
+        }
 
-function toggleFireMode() {
-    const newState = !isFireMode;
-    resetAllModes();
-    isFireMode = newState;
-    if (isFireMode) {
-        document.getElementById('fireModeBtn').classList.add('active');
-        document.getElementById('fireModeIndicator').classList.add('active');
-    }
-}
+        function toggleAccidentMode() {
+            const newState = !isAccidentMode;
+            resetAllModes();
+            isAccidentMode = newState;
+            if (isAccidentMode) {
+                document.getElementById('accidentModeBtn').classList.add('active');
+                document.getElementById('accidentModeIndicator').classList.add('active');
+            }
+        }
+        
+        function toggleVehicleMode() {
+            const newState = !isVehicleMode;
+            resetAllModes();
+            isVehicleMode = newState;
+            if (isVehicleMode) {
+                document.getElementById('vehicleModeBtn').classList.add('active');
+                document.getElementById('vehicleModeIndicator').classList.add('active');
+            }
+        }
 
-function toggleAccidentMode() {
-    const newState = !isAccidentMode;
-    resetAllModes();
-    isAccidentMode = newState;
-    if (isAccidentMode) {
-        document.getElementById('accidentModeBtn').classList.add('active');
-        document.getElementById('accidentModeIndicator').classList.add('active');
-    }
-}
+        function toggleEquipmentMode() {
+            const newState = !isEquipmentMode;
+            resetAllModes();
+            isEquipmentMode = newState;
+            if (isEquipmentMode) {
+                document.getElementById('equipmentModeBtn').classList.add('active');
+                document.getElementById('equipmentModeIndicator').classList.add('active');
+            }
+        }
+        
+        // ============ CLIC CARTE ============
+        map.on('click', function(e) {
+            // dessin du contour feu de forêt en cours
+            if (isDrawingWildfire) {
+                currentWildfireLatLngs.push(e.latlng);
+                if (currentWildfirePolyline) {
+                    currentWildfirePolyline.setLatLngs(currentWildfireLatLngs);
+                }
+                return;
+            }
 
-function toggleVehicleMode() {
-    const newState = !isVehicleMode;
-    resetAllModes();
-    isVehicleMode = newState;
-    if (isVehicleMode) {
-        document.getElementById('vehicleModeBtn').classList.add('active');
-        document.getElementById('vehicleModeIndicator').classList.add('active');
-    }
-}
+            if (isVehicleMode) {
+                addVehicle(e.latlng);
+                return;
+            }
+            if (isFireMode) {
+                addFire(e.latlng);
+                return;
+            }
+            if (isAccidentMode) {
+                addAccident(e.latlng);
+                return;
+            }
+            if (isEquipmentMode) {
+                addEquipment(e.latlng);
+            }
+        });
 
-function toggleEquipmentMode() {
-    const newState = !isEquipmentMode;
-    resetAllModes();
-    isEquipmentMode = newState;
-    if (isEquipmentMode) {
-        document.getElementById('equipmentModeBtn').classList.add('active');
-        document.getElementById('equipmentModeIndicator').classList.add('active');
-    }
-}
+        // fermeture du contour feu de forêt
+        map.on('dblclick', function(e) {
+            if (!isDrawingWildfire) return;
+            if (currentWildfireLatLngs.length < 3) {
+                isDrawingWildfire = false;
+                if (currentWildfirePolyline) {
+                    currentWildfirePolyline.remove();
+                    currentWildfirePolyline = null;
+                }
+                currentWildfireLatLngs = [];
+                return;
+            }
 
-// ============ CLIC CARTE ============
-map.on('click', function(e) {
-    if (isVehicleMode) {
-        addVehicle(e.latlng);
-        return;
-    }
-    if (isFireMode) {
-        addFire(e.latlng);
-        return;
-    }
-    if (isAccidentMode) {
-        addAccident(e.latlng);
-        return;
-    }
-    if (isEquipmentMode) {
-        addEquipment(e.latlng);
-    }
-});
+            const polygon = L.polygon(currentWildfireLatLngs, {
+                color: '#FF6B35',
+                fillColor: '#FF6B35',
+                fillOpacity: 0.25,
+                weight: 2
+            }).addTo(fireCircles);
+
+            if (currentWildfirePolyline) {
+                currentWildfirePolyline.remove();
+                currentWildfirePolyline = null;
+            }
+
+            for (let i = fires.length - 1; i >= 0; i--) {
+                if (fires[i].type === 'wildfire' && !fires[i].polygon) {
+                    fires[i].polygon = polygon;
+                    break;
+                }
+            }
+
+            isDrawingWildfire = false;
+            currentWildfireLatLngs = [];
+        });
         
         // ============ AJOUTER INCENDIE ============
         function addFire(latlng) {
@@ -541,23 +587,44 @@ map.on('click', function(e) {
                     iconSize: [35, 35],
                     iconAnchor: [17, 17]
                 })
-            }).bindPopup(`
+            }).addTo(fireMarkers);
+
+            let circle = null;
+            let polygon = null;
+
+            if (fireType === 'wildfire') {
+                isDrawingWildfire = true;
+                currentWildfireLatLngs = [latlng];
+                currentWildfirePolyline = L.polyline(currentWildfireLatLngs, {
+                    color: '#FF6B35',
+                    weight: 2,
+                    dashArray: '5,5'
+                }).addTo(fireCircles);
+            } else {
+                circle = L.circle(latlng, {
+                    radius: radius,
+                    color: '#FF6B35',
+                    fillColor: '#FF6B35',
+                    fillOpacity: 0.2,
+                    weight: 2,
+                    dashArray: '5, 5'
+                }).addTo(fireCircles);
+            }
+
+            fireMarker.bindPopup(`
                 <div style="padding: 10px; color: #333;">
                     <b style="color: #FF6B35;">Incendie #${fires.length + 1}</b><br>
                     📍 Type: ${fireType}<br>
                     💪 Intensité: ${intensity}/5<br>
-                    📏 Rayon: ${radius}m<br>
+                    ${fireType === 'wildfire'
+                        ? `Contour manuel (feu de forêt)`
+                        : `📏 Rayon: ${radius} m`
+                    }<br>
                     <button onclick="removeFire('${fireId}')" style="margin-top: 10px; padding: 5px 10px; background: #FF6B35; color: white; border: none; border-radius: 4px; cursor: pointer;">Supprimer</button>
                 </div>
-            `, { maxWidth: 250 }).addTo(fireMarkers);
-            
-            const circle = L.circle(latlng, {
-                radius: radius, color: '#FF6B35',
-                fillColor: '#FF6B35', fillOpacity: 0.2,
-                weight: 2, dashArray: '5, 5'
-            }).addTo(fireCircles);
-            
-            fires.push({ id: fireId, latlng, type: fireType, intensity, radius, marker: fireMarker, circle });
+            `, { maxWidth: 250 });
+
+            fires.push({ id: fireId, latlng, type: fireType, intensity, radius, marker: fireMarker, circle, polygon });
             updateStats();
         }
 
@@ -683,8 +750,9 @@ map.on('click', function(e) {
         window.removeFire = function(fireId) {
             const idx = fires.findIndex(f => f.id === fireId);
             if (idx > -1) {
-                fires[idx].marker.remove();
-                fires[idx].circle.remove();
+                if (fires[idx].marker) fires[idx].marker.remove();
+                if (fires[idx].circle) fires[idx].circle.remove();
+                if (fires[idx].polygon) fires[idx].polygon.remove();
                 fires.splice(idx, 1);
                 updateStats();
             }
@@ -718,7 +786,11 @@ map.on('click', function(e) {
         };
         
         function clearAllFires() {
-            fires.forEach(f => { f.marker.remove(); f.circle.remove(); });
+            fires.forEach(f => {
+                if (f.marker) f.marker.remove();
+                if (f.circle) f.circle.remove();
+                if (f.polygon) f.polygon.remove();
+            });
             fires = [];
             updateStats();
         }
