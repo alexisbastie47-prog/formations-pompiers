@@ -412,7 +412,7 @@
 
     <script>
         // ============ INITIALISATION ============
-        const map = L.map('mapContainer').setView([44.2035, 0.6233], 14);
+        const map = L.map('mapContainer').setView([44.316, 0.085], 14);
         
         const osmLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap',
@@ -774,7 +774,7 @@ map.on('click', function(e) {
         }
         
         function resetView() {
-            map.setView([44.2035, 0.6233], 14);
+            map.setView([44.316, 0.085], 14);
         }
         
         function updateFireIntensityDisplay(value) {
