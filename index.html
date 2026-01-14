@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -112,7 +113,7 @@
             50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(76, 175, 80, 0); }
         }
         .stats-box {
-            display: grid; grid-template-columns: 1fr 1fr;
+            display: grid; grid-template-columns: 1fr 1fr 1fr;
             gap: 12px; margin: 15px 0;
         }
         .stat-item {
@@ -304,6 +305,30 @@
                 <button class="btn danger" onclick="clearAllVehicles()">Effacer véhicules</button>
             </div>
         </div>
+
+        <!-- Section Matériel -->
+        <div class="section">
+            <h3><i class="fas fa-tools"></i> Ajouter matériel</h3>
+            
+            <label>Type de matériel :</label>
+            <select id="equipmentType">
+                <option value="cone">🧱 Cône de Lubeck</option>
+                <option value="sign">🚧 Panneau de signalisation</option>
+            </select>
+            
+            <div class="info-box">
+                <i class="fas fa-mouse"></i>
+                Active le mode matériel puis clique sur la carte pour placer un élément.
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn" id="equipmentModeBtn" onclick="toggleEquipmentMode()">
+                    <span class="mode-indicator" id="equipmentModeIndicator"></span>
+                    Mode Matériel
+                </button>
+                <button class="btn danger" onclick="clearAllEquipment()">Effacer matériel</button>
+            </div>
+        </div>
         
         <!-- Section Affichage -->
         <div class="section">
@@ -359,7 +384,7 @@
         </div>
         <div class="legend-item">
             <i class="fas fa-truck" style="color: #FFD700;"></i>
-            <span>Véhicule pompier</span>
+            <span>Véhicule pompier / matériel</span>
         </div>
     </div>
 
@@ -384,49 +409,70 @@
         let isFireMode = false;
         let isAccidentMode = false;
         let isVehicleMode = false;
+        let isEquipmentMode = false;
         let fires = [];
         let accidents = [];
         let vehicles = [];
+        let equipment = [];
         let isSatelliteMode = false;
         
         // ============ MODES ============
-        function toggleFireMode() {
-            isFireMode = !isFireMode;
+        function resetAllModes() {
+            isFireMode = false;
             isAccidentMode = false;
             isVehicleMode = false;
-            document.getElementById('fireModeBtn').classList.toggle('active');
-            document.getElementById('accidentModeBtn').classList.remove('active');
-            document.getElementById('vehicleModeBtn').classList.remove('active');
-            document.getElementById('fireModeIndicator').classList.toggle('active');
-            document.getElementById('accidentModeIndicator').classList.remove('active');
-            document.getElementById('vehicleModeIndicator').classList.remove('active');
-            map.style.cursor = isFireMode ? 'crosshair' : 'grab';
+            isEquipmentMode = false;
+            ['fire','accident','vehicle','equipment'].forEach(id => {
+                const btn = document.getElementById(id + 'ModeBtn');
+                const ind = document.getElementById(id + 'ModeIndicator');
+                if (btn) btn.classList.remove('active');
+                if (ind) ind.classList.remove('active');
+            });
+            map.style.cursor = 'grab';
+        }
+
+        function toggleFireMode() {
+            const newState = !isFireMode;
+            resetAllModes();
+            isFireMode = newState;
+            if (isFireMode) {
+                document.getElementById('fireModeBtn').classList.add('active');
+                document.getElementById('fireModeIndicator').classList.add('active');
+                map.style.cursor = 'crosshair';
+            }
         }
 
         function toggleAccidentMode() {
-            isAccidentMode = !isAccidentMode;
-            isFireMode = false;
-            isVehicleMode = false;
-            document.getElementById('accidentModeBtn').classList.toggle('active');
-            document.getElementById('fireModeBtn').classList.remove('active');
-            document.getElementById('vehicleModeBtn').classList.remove('active');
-            document.getElementById('accidentModeIndicator').classList.toggle('active');
-            document.getElementById('fireModeIndicator').classList.remove('active');
-            document.getElementById('vehicleModeIndicator').classList.remove('active');
-            map.style.cursor = isAccidentMode ? 'crosshair' : 'grab';
+            const newState = !isAccidentMode;
+            resetAllModes();
+            isAccidentMode = newState;
+            if (isAccidentMode) {
+                document.getElementById('accidentModeBtn').classList.add('active');
+                document.getElementById('accidentModeIndicator').classList.add('active');
+                map.style.cursor = 'crosshair';
+            }
         }
         
         function toggleVehicleMode() {
-            isVehicleMode = !isVehicleMode;
-            isFireMode = false;
-            isAccidentMode = false;
-            document.getElementById('vehicleModeBtn').classList.toggle('active');
-            document.getElementById('fireModeBtn').classList.remove('active');
-            document.getElementById('accidentModeBtn').classList.remove('active');
-            document.getElementById('vehicleModeIndicator').classList.toggle('active');
-            document.getElementById('fireModeIndicator').classList.remove('active');
-            document.getElementById('accidentModeIndicator').classList.remove('active');
-            map.style.cursor = isVehicleMode ? 'crosshair' : 'grab';
+            const newState = !isVehicleMode;
+            resetAllModes();
+            isVehicleMode = newState;
+            if (isVehicleMode) {
+                document.getElementById('vehicleModeBtn').classList.add('active');
+                document.getElementById('vehicleModeIndicator').classList.add('active');
+                map.style.cursor = 'crosshair';
+            }
+        }
+
+        function toggleEquipmentMode() {
+            const newState = !isEquipmentMode;
+            resetAllModes();
+            isEquipmentMode = newState;
+            if (isEquipmentMode) {
+                document.getElementById('equipmentModeBtn').classList.add('active');
+                document.getElementById('equipmentModeIndicator').classList.add('active');
+                map.style.cursor = 'crosshair';
+            }
         }
         
         // ============ CLIC CARTE ============
@@ -441,6 +487,10 @@
             }
             if (isAccidentMode) {
                 addAccident(e.latlng);
+                return;
+            }
+            if (isEquipmentMode) {
+                addEquipment(e.latlng);
             }
         });
         
@@ -522,7 +572,7 @@
                 </div>
             `, { maxWidth: 260 }).addTo(fireMarkers);
 
-            const half = (length / 2) / 111000; // approx degrés
+            const half = (length / 2) / 111000;
             const line = L.polyline(
                 [
                     [latlng.lat - half, latlng.lng],
@@ -540,41 +590,74 @@
             updateStats();
         }
         
-       // ============ AJOUTER VÉHICULE ============
-function addVehicle(latlng) {
-    const vehicleType = document.getElementById('vehicleType').value;
-    const vehicleId = 'vehicle_' + Date.now();
+        // ============ AJOUTER VÉHICULE ============
+        function addVehicle(latlng) {
+            const vehicleType = document.getElementById('vehicleType').value;
+            const vehicleId = 'vehicle_' + Date.now();
 
-    // Choix des icônes selon le type
-    const vehicleIcons = {
-        FPT: '🚒',
-        CCF: '🚒',
-        CCFS: '🚒',
-        VSAV: '🚑',
-        VLI: '🚙',
-        VSR: '🛠️',   // Véhicule de Secours Routier
-        CMD: '📡',
-        DECA: '🚒'
-    };
-    const iconChar = vehicleIcons[vehicleType] || '🚒';
+            const vehicleIcons = {
+                FPT: '🚒',
+                CCF: '🚒',
+                CCFS: '🚒',
+                VSAV: '🚑',
+                VLI: '🚙',
+                VSR: '🛠️',
+                CMD: '📡',
+                DECA: '🚒'
+            };
+            const iconChar = vehicleIcons[vehicleType] || '🚒';
 
-    const vehicleMarker = L.marker(latlng, {
-        icon: L.divIcon({
-            className: 'vehicle-marker',
-            html: `<div style="font-size: 26px; filter: drop-shadow(0 0 3px rgba(255, 215, 0, 0.6));">${iconChar}</div>`,
-            iconSize: [32, 32],
-            iconAnchor: [16, 16]
-        })
-    }).bindPopup(`
-        <div style="padding: 10px; color: #333;">
-            <b style="color: #FFD700;">${vehicleType}</b><br>
-            <button onclick="removeVehicle('${vehicleId}')" style="margin-top: 8px; padding: 5px 10px; background: #E74C3C; color: white; border: none; border-radius: 4px; cursor: pointer;">Supprimer</button>
-        </div>
-    `, { maxWidth: 200 }).addTo(vehicleMarkers);
+            const vehicleMarker = L.marker(latlng, {
+                icon: L.divIcon({
+                    className: 'vehicle-marker',
+                    html: `<div style="font-size: 26px; filter: drop-shadow(0 0 3px rgba(255, 215, 0, 0.6));">${iconChar}</div>`,
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16]
+                })
+            }).bindPopup(`
+                <div style="padding: 10px; color: #333;">
+                    <b style="color: #FFD700;">${vehicleType}</b><br>
+                    <button onclick="removeVehicle('${vehicleId}')" style="margin-top: 8px; padding: 5px 10px; background: #E74C3C; color: white; border: none; border-radius: 4px; cursor: pointer;">Supprimer</button>
+                </div>
+            `, { maxWidth: 200 }).addTo(vehicleMarkers);
 
-    vehicles.push({ id: vehicleId, type: vehicleType, marker: vehicleMarker, latlng });
-    updateStats();
-}
+            vehicles.push({ id: vehicleId, type: vehicleType, marker: vehicleMarker, latlng });
+            updateStats();
+        }
+
+        // ============ AJOUTER MATÉRIEL ============
+        function addEquipment(latlng) {
+            const equipmentType = document.getElementById('equipmentType').value;
+            const equipmentId = 'equip_' + Date.now();
+
+            const equipmentIcons = {
+                cone: '🧱',
+                sign: '🚧'
+            };
+            const labelText = {
+                cone: 'Cône de Lubeck',
+                sign: 'Panneau de signalisation'
+            };
+
+            const iconChar = equipmentIcons[equipmentType] || '🧱';
+            const label = labelText[equipmentType] || equipmentType;
+
+            const equipmentMarker = L.marker(latlng, {
+                icon: L.divIcon({
+                    className: 'equipment-marker',
+                    html: `<div style="font-size: 24px; filter: drop-shadow(0 0 3px rgba(255,255,255,0.6));">${iconChar}</div>`,
+                    iconSize: [28, 28],
+                    iconAnchor: [14, 14]
+                })
+            }).bindPopup(`
+                <div style="padding: 10px; color: #333;">
+                    <b style="color:#ffffff;background:#34495e;padding:2px 4px;border-radius:3px;">${label}</b><br>
+                    <button onclick="removeEquipment('${equipmentId}')" style="margin-top:8px;padding:5px 10px;background:#E74C3C;color:white;border:none;border-radius:4px;cursor:pointer;">Supprimer</button>
+                </div>
+            `, { maxWidth: 220 }).addTo(vehicleMarkers);
+
+            equipment.push({ id: equipmentId, type: equipmentType, marker: equipmentMarker, latlng });
+        }
         
         // ============ SUPPRESSION ============
         window.removeFire = function(fireId) {
@@ -605,6 +688,14 @@ function addVehicle(latlng) {
                 updateStats();
             }
         };
+
+        window.removeEquipment = function(equipmentId) {
+            const idx = equipment.findIndex(e => e.id === equipmentId);
+            if (idx > -1) {
+                equipment[idx].marker.remove();
+                equipment.splice(idx, 1);
+            }
+        };
         
         function clearAllFires() {
             fires.forEach(f => { f.marker.remove(); f.circle.remove(); });
@@ -624,11 +715,17 @@ function addVehicle(latlng) {
             updateStats();
         }
 
+        function clearAllEquipment() {
+            equipment.forEach(e => e.marker.remove());
+            equipment = [];
+        }
+
         function clearAllSimulation() {
             if (confirm('⚠️ Êtes-vous sûr ? Cela effacera TOUS les éléments de la simulation.')) {
                 clearAllFires();
                 clearAllAccidents();
                 clearAllVehicles();
+                clearAllEquipment();
             }
         }
         
