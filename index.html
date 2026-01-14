@@ -16,329 +16,163 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body {
-            width: 100%;
-            height: 100%;
+            width: 100%; height: 100%;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #0a0e27;
-            color: #fff;
-            overflow: hidden;
+            background: #0a0e27; color: #fff; overflow: hidden;
         }
-        
-        /* Conteneur Carte */
         #mapContainer {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 1;
-            background: #1a1a2e;
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 1; background: #1a1a2e;
         }
-        
-        /* Panneau de Contrôle */
         .control-panel {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            width: 380px;
-            max-height: 85vh;
+            position: absolute; top: 15px; left: 15px;
+            width: 380px; max-height: 85vh;
             background: rgba(15, 15, 35, 0.95);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 107, 53, 0.3);
-            border-radius: 12px;
-            padding: 20px;
-            z-index: 1000;
-            overflow-y: auto;
+            border-radius: 12px; padding: 20px;
+            z-index: 1000; overflow-y: auto;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
         }
-        
         .control-panel h1 {
-            font-size: 20px;
-            margin-bottom: 5px;
+            font-size: 20px; margin-bottom: 5px;
             color: #FF6B35;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            display: flex; align-items: center; gap: 10px;
         }
-        
-        .control-panel h1 i {
-            font-size: 24px;
-        }
-        
-        .control-panel > p {
-            font-size: 12px;
-            color: #999;
-            margin-bottom: 20px;
-        }
-        
+        .control-panel h1 i { font-size: 24px; }
+        .control-panel > p { font-size: 12px; color: #999; margin-bottom: 20px; }
         .section {
-            margin-bottom: 20px;
-            padding-bottom: 18px;
+            margin-bottom: 20px; padding-bottom: 18px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-        
-        .section:last-child {
-            border-bottom: none;
-        }
-        
+        .section:last-child { border-bottom: none; }
         .section h3 {
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #FF6B35;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            font-size: 13px; text-transform: uppercase; letter-spacing: 1px;
+            color: #FF6B35; margin-bottom: 12px;
+            display: flex; align-items: center; gap: 8px;
         }
-        
-        .section h3 i {
-            font-size: 16px;
-        }
-        
+        .section h3 i { font-size: 16px; }
         label {
-            display: block;
-            font-size: 12px;
-            margin-top: 10px;
-            margin-bottom: 5px;
-            color: #ddd;
-            font-weight: 500;
+            display: block; font-size: 12px;
+            margin-top: 10px; margin-bottom: 5px;
+            color: #ddd; font-weight: 500;
         }
-        
-        input[type="text"],
-        input[type="number"],
-        input[type="range"],
-        select {
-            width: 100%;
-            padding: 8px 12px;
-            margin-bottom: 10px;
+        input[type="text"], input[type="number"], input[type="range"], select {
+            width: 100%; padding: 8px 12px; margin-bottom: 10px;
             border: 1px solid rgba(255, 107, 53, 0.3);
             border-radius: 6px;
             background: rgba(255, 255, 255, 0.05);
-            color: #fff;
-            font-size: 12px;
+            color: #fff; font-size: 12px;
             transition: all 0.3s ease;
         }
-        
-        input[type="text"]:focus,
-        input[type="number"]:focus,
-        input[type="range"]:focus,
-        select:focus {
-            outline: none;
-            border-color: #FF6B35;
+        input:focus, select:focus {
+            outline: none; border-color: #FF6B35;
             background: rgba(255, 107, 53, 0.1);
             box-shadow: 0 0 8px rgba(255, 107, 53, 0.2);
         }
-        
         .slider-value {
-            display: inline-block;
-            background: #FF6B35;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 3px;
-            font-size: 11px;
-            float: right;
-            margin-top: -26px;
-            margin-right: 2px;
+            display: inline-block; background: #FF6B35; color: white;
+            padding: 2px 8px; border-radius: 3px; font-size: 11px;
+            float: right; margin-top: -26px; margin-right: 2px;
         }
-        
-        /* Boutons */
         .btn {
-            display: inline-block;
-            padding: 10px 15px;
+            display: inline-block; padding: 10px 15px;
             margin: 5px 5px 5px 0;
             background: linear-gradient(135deg, #FF6B35 0%, #E55A2B 100%);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
+            color: white; border: none; border-radius: 6px;
+            cursor: pointer; font-weight: 600; font-size: 12px;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            transition: all 0.3s ease; position: relative; overflow: hidden;
         }
-        
         .btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(255, 107, 53, 0.4);
         }
-        
-        .btn:active {
-            transform: translateY(0);
-        }
-        
+        .btn:active { transform: translateY(0); }
         .btn.active {
             background: linear-gradient(135deg, #4CAF50 0%, #45A049 100%);
             box-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
         }
-        
-        .btn.danger {
-            background: linear-gradient(135deg, #E74C3C 0%, #C0392B 100%);
-        }
-        
-        .btn.danger:hover {
-            box-shadow: 0 8px 20px rgba(231, 76, 60, 0.4);
-        }
-        
-        .btn-group {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        
-        /* Indicateurs de Mode */
+        .btn.danger { background: linear-gradient(135deg, #E74C3C 0%, #C0392B 100%); }
+        .btn.danger:hover { box-shadow: 0 8px 20px rgba(231, 76, 60, 0.4); }
+        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
         .mode-indicator {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #666;
-            margin-right: 6px;
-            animation: none;
+            display: inline-block; width: 8px; height: 8px;
+            border-radius: 50%; background: #666;
+            margin-right: 6px; animation: none;
         }
-        
         .mode-indicator.active {
             background: #4CAF50;
             animation: pulse 0.6s infinite;
         }
-        
         @keyframes pulse {
             0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.5); }
             50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(76, 175, 80, 0); }
         }
-        
-        /* Statistiques */
         .stats-box {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin: 15px 0;
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 12px; margin: 15px 0;
         }
-        
         .stat-item {
             background: rgba(255, 107, 53, 0.1);
             border: 1px solid rgba(255, 107, 53, 0.3);
-            padding: 12px;
-            border-radius: 8px;
-            text-align: center;
+            padding: 12px; border-radius: 8px; text-align: center;
         }
-        
         .stat-number {
-            font-size: 24px;
-            font-weight: bold;
-            color: #FF6B35;
+            font-size: 24px; font-weight: bold; color: #FF6B35;
         }
-        
         .stat-label {
-            font-size: 11px;
-            color: #999;
-            text-transform: uppercase;
-            margin-top: 5px;
+            font-size: 11px; color: #999;
+            text-transform: uppercase; margin-top: 5px;
         }
-        
-        /* Légende */
         .legend {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
+            position: absolute; bottom: 20px; left: 20px;
             background: rgba(15, 15, 35, 0.95);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 107, 53, 0.3);
-            padding: 15px 20px;
-            border-radius: 12px;
-            z-index: 1000;
-            font-size: 12px;
+            padding: 15px 20px; border-radius: 12px;
+            z-index: 1000; font-size: 12px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
-        
         .legend-item {
-            display: flex;
-            align-items: center;
-            margin: 8px 0;
-            gap: 10px;
+            display: flex; align-items: center;
+            margin: 8px 0; gap: 10px;
         }
-        
         .legend-color {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border-radius: 3px;
-            flex-shrink: 0;
+            display: inline-block; width: 20px; height: 20px;
+            border-radius: 3px; flex-shrink: 0;
         }
-        
-        .legend-item i {
-            font-size: 16px;
-            width: 20px;
-            text-align: center;
-        }
-        
-        /* Scrollbar personnalisée */
-        .control-panel::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        .control-panel::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-        }
-        
+        .legend-item i { font-size: 16px; width: 20px; text-align: center; }
+        .control-panel::-webkit-scrollbar { width: 6px; }
+        .control-panel::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
         .control-panel::-webkit-scrollbar-thumb {
             background: rgba(255, 107, 53, 0.3);
             border-radius: 3px;
         }
-        
         .control-panel::-webkit-scrollbar-thumb:hover {
             background: rgba(255, 107, 53, 0.5);
         }
-        
-        /* Info Box */
         .info-box {
             background: rgba(76, 175, 80, 0.1);
             border-left: 3px solid #4CAF50;
-            padding: 10px 12px;
-            border-radius: 4px;
-            font-size: 11px;
-            color: #ddd;
-            margin: 10px 0;
-            line-height: 1.5;
+            padding: 10px 12px; border-radius: 4px;
+            font-size: 11px; color: #ddd;
+            margin: 10px 0; line-height: 1.5;
         }
-        
-        .info-box i {
-            color: #4CAF50;
-            margin-right: 6px;
-        }
-        
-        /* Responsive */
+        .info-box i { color: #4CAF50; margin-right: 6px; }
         @media (max-width: 768px) {
             .control-panel {
-                width: 90%;
-                max-height: 60vh;
-                left: 5% !important;
-                top: 10px !important;
+                width: 90%; max-height: 60vh;
+                left: 5% !important; top: 10px !important;
             }
-            
             .legend {
-                bottom: 10px;
-                left: 10px;
-                right: auto;
+                bottom: 10px; left: 10px; right: auto;
                 font-size: 11px;
             }
         }
-        
-        /* Animation de chargement */
-        .loading {
-            animation: spin 1s linear infinite;
-        }
-        
+        .loading { animation: spin 1s linear infinite; }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -368,40 +202,61 @@
             </div>
         </div>
         
-        <!-- Section Incendies -->
+        <!-- Section Événement (Incendie / Accident) -->
         <div class="section">
-            <h3><i class="fas fa-fire"></i> Ajouter un Incendie</h3>
-            
-            <label>Type d'incendie:</label>
-            <select id="fireType">
-                <option value="residential">🏠 Habitation</option>
-                <option value="commercial">🏢 Commerce</option>
-                <option value="wildfire">🌲 Feu de forêt</option>
-                <option value="vehicle">🚗 Véhicule</option>
-                <option value="industrial">🏭 Industriel (ICPE)</option>
-                <option value="agricultural">🌾 Agricole</option>
+            <h3><i class="fas fa-fire"></i> Événement</h3>
+
+            <label>Type d'événement :</label>
+            <select id="eventMode">
+                <option value="fire">🔥 Incendie</option>
+                <option value="accident">🚗 Accident de la route</option>
             </select>
-            
-            <label>Intensité (1-5):</label>
-            <input type="range" id="fireIntensity" min="1" max="5" value="3" 
-                   oninput="updateFireIntensityDisplay(this.value)">
-            <span class="slider-value" id="intensityValue">3/5</span>
-            
-            <label>Rayon d'action (m):</label>
-            <input type="range" id="fireRadius" min="50" max="500" value="100" step="10"
-                   oninput="updateFireRadiusDisplay(this.value)">
-            <span class="slider-value" id="radiusValue">100 m</span>
+
+            <div id="fireParams">
+                <label>Type d'incendie:</label>
+                <select id="fireType">
+                    <option value="residential">🏠 Habitation</option>
+                    <option value="commercial">🏢 Commerce</option>
+                    <option value="wildfire">🌲 Feu de forêt</option>
+                    <option value="vehicle">🚗 Véhicule</option>
+                    <option value="industrial">🏭 Industriel (ICPE)</option>
+                    <option value="agricultural">🌾 Agricole</option>
+                </select>
+                
+                <label>Intensité (1-5):</label>
+                <input type="range" id="fireIntensity" min="1" max="5" value="3" 
+                    oninput="updateFireIntensityDisplay(this.value)">
+                <span class="slider-value" id="intensityValue">3/5</span>
+                
+                <label>Rayon d'action (m):</label>
+                <input type="range" id="fireRadius" min="50" max="500" value="100" step="10"
+                    oninput="updateFireRadiusDisplay(this.value)">
+                <span class="slider-value" id="radiusValue">100 m</span>
+            </div>
+
+            <div id="accidentParams" style="display:none;">
+                <label>Gravité de l'accident (1-5):</label>
+                <input type="range" id="accidentSeverity" min="1" max="5" value="3"
+                    oninput="document.getElementById('accidentSeverityValue').textContent = this.value + '/5';">
+                <span class="slider-value" id="accidentSeverityValue">3/5</span>
+
+                <label>Longueur de zone impactée (m):</label>
+                <input type="range" id="accidentLength" min="50" max="500" value="150" step="10"
+                    oninput="document.getElementById('accidentLengthValue').textContent = this.value + ' m';">
+                <span class="slider-value" id="accidentLengthValue">150 m</span>
+            </div>
             
             <div class="info-box">
-                <i class="fas fa-mouse"></i> Cliquez sur la carte pour placer un incendie
+                <i class="fas fa-mouse"></i>
+                Sélectionne le type d'événement, puis clique sur la carte pour le placer.
             </div>
             
             <div class="btn-group">
-                <button class="btn" id="fireModeBtn" onclick="toggleFireMode()">
-                    <span class="mode-indicator" id="fireModeIndicator"></span>
-                    Mode Incendie
+                <button class="btn" id="eventModeBtn" onclick="toggleEventMode()">
+                    <span class="mode-indicator" id="eventModeIndicator"></span>
+                    Mode Événement
                 </button>
-                <button class="btn danger" onclick="clearAllFires()">Effacer</button>
+                <button class="btn danger" onclick="clearAllEvents()">Effacer événements</button>
             </div>
         </div>
         
@@ -488,58 +343,66 @@
         // ============ INITIALISATION ============
         const map = L.map('mapContainer').setView([44.2035, 0.6233], 14);
         
-        // Couche OpenStreetMap
         const osmLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap',
             maxZoom: 19
         }).addTo(map);
         
-        // Couche Satellite (ESRI)
         const satelliteLayer = L.tileLayer(
             'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-            {
-                attribution: '© ESRI',
-                maxZoom: 18
-            }
+            { attribution: '© ESRI', maxZoom: 18 }
         );
         
-        // Groupes de calques
         const fireMarkers = L.featureGroup().addTo(map);
         const vehicleMarkers = L.featureGroup().addTo(map);
         const fireCircles = L.featureGroup().addTo(map);
         
-        // État
-        let isFireMode = false;
+        let isEventMode = false;
         let isVehicleMode = false;
         let fires = [];
+        let accidents = [];
         let vehicles = [];
         let isSatelliteMode = false;
         
+        // ============ CHANGEMENT TYPE ÉVÉNEMENT ============
+        document.getElementById('eventMode').addEventListener('change', function () {
+            const mode = this.value;
+            document.getElementById('fireParams').style.display = mode === 'fire' ? 'block' : 'none';
+            document.getElementById('accidentParams').style.display = mode === 'accident' ? 'block' : 'none';
+        });
+
         // ============ MODES ============
-        function toggleFireMode() {
-            isFireMode = !isFireMode;
+        function toggleEventMode() {
+            isEventMode = !isEventMode;
             isVehicleMode = false;
-            document.getElementById('fireModeBtn').classList.toggle('active');
+            document.getElementById('eventModeBtn').classList.toggle('active');
             document.getElementById('vehicleModeBtn').classList.remove('active');
-            document.getElementById('fireModeIndicator').classList.toggle('active');
+            document.getElementById('eventModeIndicator').classList.toggle('active');
             document.getElementById('vehicleModeIndicator').classList.remove('active');
-            map.style.cursor = isFireMode ? 'crosshair' : 'grab';
+            map.style.cursor = isEventMode ? 'crosshair' : 'grab';
         }
         
         function toggleVehicleMode() {
             isVehicleMode = !isVehicleMode;
-            isFireMode = false;
+            isEventMode = false;
             document.getElementById('vehicleModeBtn').classList.toggle('active');
-            document.getElementById('fireModeBtn').classList.remove('active');
+            document.getElementById('eventModeBtn').classList.remove('active');
             document.getElementById('vehicleModeIndicator').classList.toggle('active');
-            document.getElementById('fireModeIndicator').classList.remove('active');
+            document.getElementById('eventModeIndicator').classList.remove('active');
             map.style.cursor = isVehicleMode ? 'crosshair' : 'grab';
         }
         
         // ============ CLIC CARTE ============
         map.on('click', function(e) {
-            if (isFireMode) addFire(e.latlng);
-            if (isVehicleMode) addVehicle(e.latlng);
+            if (isVehicleMode) {
+                addVehicle(e.latlng);
+                return;
+            }
+            if (isEventMode) {
+                const mode = document.getElementById('eventMode').value;
+                if (mode === 'fire') addFire(e.latlng);
+                else if (mode === 'accident') addAccident(e.latlng);
+            }
         });
         
         // ============ AJOUTER INCENDIE ============
@@ -549,16 +412,6 @@
             const radius = parseInt(document.getElementById('fireRadius').value);
             const fireId = 'fire_' + Date.now();
             
-            const fireIcons = {
-                'residential': '🏠',
-                'commercial': '🏢',
-                'wildfire': '🌲',
-                'vehicle': '🚗',
-                'industrial': '🏭',
-                'agricultural': '🌾'
-            };
-            
-            // Animation CSS
             if (!document.getElementById('fireAnimation')) {
                 const style = document.createElement('style');
                 style.id = 'fireAnimation';
@@ -572,7 +425,6 @@
                 document.head.appendChild(style);
             }
             
-            // Marqueur incendie
             const fireMarker = L.marker(latlng, {
                 icon: L.divIcon({
                     className: 'fire-marker',
@@ -588,30 +440,55 @@
                     📏 Rayon: ${radius}m<br>
                     <button onclick="removeFire('${fireId}')" style="margin-top: 10px; padding: 5px 10px; background: #FF6B35; color: white; border: none; border-radius: 4px; cursor: pointer;">Supprimer</button>
                 </div>
-            `, {
-                maxWidth: 250
-            }).addTo(fireMarkers);
+            `, { maxWidth: 250 }).addTo(fireMarkers);
             
-            // Zone affectée
             const circle = L.circle(latlng, {
-                radius: radius,
-                color: '#FF6B35',
-                fillColor: '#FF6B35',
-                fillOpacity: 0.2,
-                weight: 2,
-                dashArray: '5, 5'
+                radius: radius, color: '#FF6B35',
+                fillColor: '#FF6B35', fillOpacity: 0.2,
+                weight: 2, dashArray: '5, 5'
             }).addTo(fireCircles);
             
-            fires.push({
-                id: fireId,
-                latlng: latlng,
-                type: fireType,
-                intensity: intensity,
-                radius: radius,
-                marker: fireMarker,
-                circle: circle
-            });
-            
+            fires.push({ id: fireId, latlng, type: fireType, intensity, radius, marker: fireMarker, circle });
+            updateStats();
+        }
+
+        // ============ AJOUTER ACCIDENT ============
+        function addAccident(latlng) {
+            const severity = parseInt(document.getElementById('accidentSeverity').value);
+            const length = parseInt(document.getElementById('accidentLength').value);
+            const accidentId = 'accident_' + Date.now();
+
+            const accidentMarker = L.marker(latlng, {
+                icon: L.divIcon({
+                    className: 'accident-marker',
+                    html: `<div style="font-size: 26px; filter: drop-shadow(0 0 4px rgba(200,0,0,0.8));">🚗</div>`,
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 15]
+                })
+            }).bindPopup(`
+                <div style="padding: 10px; color: #333;">
+                    <b style="color:#E74C3C;">Accident #${accidents.length + 1}</b><br>
+                    Gravité: ${severity}/5<br>
+                    Longueur impactée: ${length} m<br>
+                    <button onclick="removeAccident('${accidentId}')" style="margin-top:8px;padding:5px 10px;background:#E74C3C;color:white;border:none;border-radius:4px;cursor:pointer;">Supprimer</button>
+                </div>
+            `, { maxWidth: 250 }).addTo(fireMarkers);
+
+            const half = (length / 2) / 111000; // approx degrés
+            const line = L.polyline(
+                [
+                    [latlng.lat - half, latlng.lng],
+                    [latlng.lat + half, latlng.lng]
+                ],
+                {
+                    color: '#E74C3C',
+                    weight: 4,
+                    opacity: 0.8,
+                    dashArray: '8,4'
+                }
+            ).addTo(fireCircles);
+
+            accidents.push({ id: accidentId, latlng, severity, length, marker: accidentMarker, line });
             updateStats();
         }
         
@@ -633,19 +510,11 @@
                     <b style="color: #FFD700;">${vehicleType}</b><br>
                     <button onclick="removeVehicle('${vehicleId}')" style="margin-top: 8px; padding: 5px 10px; background: #E74C3C; color: white; border: none; border-radius: 4px; cursor: pointer;">Supprimer</button>
                 </div>
-            `, {
-                maxWidth: 200
-            }).addTo(vehicleMarkers);
+            `, { maxWidth: 200 }).addTo(vehicleMarkers);
             
             vehicleMarker.dragging.enable();
             
-            vehicles.push({
-                id: vehicleId,
-                type: vehicleType,
-                marker: vehicleMarker,
-                latlng: latlng
-            });
-            
+            vehicles.push({ id: vehicleId, type: vehicleType, marker: vehicleMarker, latlng });
             updateStats();
         }
         
@@ -656,6 +525,16 @@
                 fires[idx].marker.remove();
                 fires[idx].circle.remove();
                 fires.splice(idx, 1);
+                updateStats();
+            }
+        };
+
+        window.removeAccident = function(accidentId) {
+            const idx = accidents.findIndex(a => a.id === accidentId);
+            if (idx > -1) {
+                accidents[idx].marker.remove();
+                accidents[idx].line.remove();
+                accidents.splice(idx, 1);
                 updateStats();
             }
         };
@@ -674,6 +553,17 @@
             fires = [];
             updateStats();
         }
+
+        function clearAllAccidents() {
+            accidents.forEach(a => { a.marker.remove(); a.line.remove(); });
+            accidents = [];
+            updateStats();
+        }
+
+        function clearAllEvents() {
+            clearAllFires();
+            clearAllAccidents();
+        }
         
         function clearAllVehicles() {
             vehicles.forEach(v => v.marker.remove());
@@ -683,7 +573,7 @@
         
         function clearAllSimulation() {
             if (confirm('⚠️ Êtes-vous sûr ? Cela effacera TOUS les éléments de la simulation.')) {
-                clearAllFires();
+                clearAllEvents();
                 clearAllVehicles();
             }
         }
@@ -723,7 +613,6 @@
             document.getElementById('radiusValue').textContent = value + ' m';
         }
         
-        // Initialisation
         updateStats();
     </script>
 </body>
