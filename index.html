@@ -566,14 +566,14 @@
             }
             
             const fireMarker = L.marker(latlng, {
-                icon: L.divIcon({
-                    className: 'fire-marker',
-                    html: `<div style="font-size: 28px; filter: drop-shadow(0 0 4px rgba(255, 107, 53, 0.8));">🔥</div>`,
-                    iconSize: [35, 35],
-                    iconAnchor: [17, 17]
-                })
-            }).addTo(fireMarkers);
-
+    icon: L.divIcon({
+        className: 'fire-marker',
+        html: `<div style="font-size: 28px; filter: drop-shadow(0 0 4px rgba(255, 107, 53, 0.8));">🔥</div>`,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14],    // centre de l'emoji
+        popupAnchor: [0, -14]
+    })
+}).addTo(fireMarkers);
             let polygon = null;
 
             if (fireType === 'wildfire') {
