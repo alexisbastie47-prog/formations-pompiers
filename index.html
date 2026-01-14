@@ -274,34 +274,40 @@
             </div>
         </div>
         
-        <!-- Section Véhicules pompiers -->
-        <div class="section">
-            <h3><i class="fas fa-truck"></i> Véhicules de secours</h3>
-            
-            <label>Type de véhicule:</label>
-            <select id="vehicleType">
-                <option value="FPT">🚒 Fourgon Pompe Tonne</option>
-                <option value="CCF">🚒 Camion Citernes Feux</option>
-                <option value="CCFS">🚒 CCFS (Structure lourde)</option>
-                <option value="VSAV">🚑 VSAV (Secours)</option>
-                <option value="VLI">🚙 VLI (Intervention légère)</option>
-                <option value="VSR">🛠️ VSR (Secours Routier)</option>
-                <option value="CMD">📡 Poste de Commandement</option>
-                <option value="DECA">🚒 DECA (Déploiement)</option>
-            </select>
-            
-            <div class="info-box">
-                <i class="fas fa-mouse"></i> Active le mode véhicule puis clique sur la carte pour ajouter un engin.
-            </div>
-            
-            <div class="btn-group">
-                <button class="btn" id="vehicleModeBtn" onclick="toggleVehicleMode()">
-                    <span class="mode-indicator" id="vehicleModeIndicator"></span>
-                    Mode Véhicule
-                </button>
-                <button class="btn danger" onclick="clearAllVehicles()">Effacer véhicules</button>
-            </div>
-        </div>
+       <!-- Section Véhicules pompiers -->
+<div class="section">
+    <h3><i class="fas fa-truck"></i> Véhicules de secours</h3>
+    
+    <label>Type de véhicule:</label>
+    <select id="vehicleType">
+        <option value="CCF">🚒 CCF</option>
+        <option value="FPT">🚒 FPT</option>
+        <option value="VSAV">🚑 VSAV</option>
+        <option value="VLI">🚙 VLI</option>
+        <option value="VLR">🚗 VLR</option>
+        <option value="MEA">🚒 MEA</option>
+        <option value="VSR">🛠️ VSR</option>
+        <option value="CCGC">🚒 CCGC</option>
+        <option value="VLRTT">🚙 VLRTT</option>
+        <option value="PCC">📡 PCC</option>
+        <option value="VSEC">🚧 VSEC</option>
+    </select>
+
+    <label>Nom de l'engin (CIS) :</label>
+    <input type="text" id="vehicleName" placeholder="Ex : FPT Agen">
+
+    <div class="info-box">
+        <i class="fas fa-mouse"></i> Active le mode véhicule puis clique sur la carte pour ajouter un engin.
+    </div>
+    
+    <div class="btn-group">
+        <button class="btn" id="vehicleModeBtn" onclick="toggleVehicleMode()">
+            <span class="mode-indicator" id="vehicleModeIndicator"></span>
+            Mode Véhicule
+        </button>
+        <button class="btn danger" onclick="clearAllVehicles()">Effacer véhicules</button>
+    </div>
+</div>
 
         <!-- Section Matériel -->
         <div class="section">
@@ -635,39 +641,42 @@
         
         // ============ AJOUTER VÉHICULE ============
         function addVehicle(latlng) {
-            const vehicleType = document.getElementById('vehicleType').value;
-            const vehicleId = 'vehicle_' + Date.now();
+    const vehicleType = document.getElementById('vehicleType').value;
+    const vehicleName = document.getElementById('vehicleName').value.trim();
+    const vehicleId = 'vehicle_' + Date.now();
 
-            const vehicleIcons = {
-                FPT: '🚒',
-                CCF: '🚒',
-                CCFS: '🚒',
-                VSAV: '🚑',
-                VLI: '🚙',
-                VSR: '🛠️',
-                CMD: '📡',
-                DECA: '🚒'
-            };
-            const iconChar = vehicleIcons[vehicleType] || '🚒';
+    const vehicleIcons = {
+        CCF:  '🚒',
+        FPT:  '🚒',
+        VSAV: '🚑',
+        VLI:  '🚙',
+        VLR:  '🚗',
+        MEA:  '🚒',
+        VSR:  '🛠️',
+        CCGC: '🚒',
+        VLRTT:'🚙',
+        PCC:  '📡',
+        VSEC: '🚧'
+    };
+    const iconChar = vehicleIcons[vehicleType] || '🚒';
 
-            const vehicleMarker = L.marker(latlng, {
-                icon: L.divIcon({
-                    className: 'vehicle-marker',
-                    html: `<div style="font-size: 26px; filter: drop-shadow(0 0 3px rgba(255, 215, 0, 0.6));">${iconChar}</div>`,
-                    iconSize: [32, 32],
-                    iconAnchor: [16, 16]
-                })
-            }).bindPopup(`
-                <div style="padding: 10px; color: #333;">
-                    <b style="color: #FFD700;">${vehicleType}</b><br>
-                    <button onclick="removeVehicle('${vehicleId}')" style="margin-top: 8px; padding: 5px 10px; background: #E74C3C; color: white; border: none; border-radius: 4px; cursor: pointer;">Supprimer</button>
-                </div>
-            `, { maxWidth: 200 }).addTo(vehicleMarkers);
+    const vehicleMarker = L.marker(latlng, {
+        icon: L.divIcon({
+            className: 'vehicle-marker',
+            html: `<div style="font-size: 26px; filter: drop-shadow(0 0 3px rgba(255, 215, 0, 0.6));">${iconChar}</div>`,
+            iconSize: [32, 32],
+            iconAnchor: [16, 16]
+        })
+    }).bindPopup(`
+        <div style="padding: 10px; color: #333;">
+            <b style="color: #FFD700;">${vehicleType}${vehicleName ? ' - ' + vehicleName : ''}</b><br>
+            <button onclick="removeVehicle('${vehicleId}')" style="margin-top: 8px; padding: 5px 10px; background: #E74C3C; color: white; border: none; border-radius: 4px; cursor: pointer;">Supprimer</button>
+        </div>
+    `, { maxWidth: 220 }).addTo(vehicleMarkers);
 
-            vehicles.push({ id: vehicleId, type: vehicleType, marker: vehicleMarker, latlng });
-            updateStats();
-        }
-
+    vehicles.push({ id: vehicleId, type: vehicleType, name: vehicleName, marker: vehicleMarker, latlng });
+    updateStats();
+}
         // ============ AJOUTER MATÉRIEL ============
         function addEquipment(latlng) {
             const equipmentType = document.getElementById('equipmentType').value;
