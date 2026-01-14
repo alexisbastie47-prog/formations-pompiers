@@ -1,3 +1,14 @@
+Oui, tu peux simplifier entièrement la section accident pour ne garder que le type de véhicule + un marqueur sur la carte.
+
+Voici ton script complet déjà modifié avec :
+
+suppression des sliders Gravité et Longueur impactée dans le HTML,
+
+suppression de ces notions dans addAccident,
+
+aucun tronçon / ligne tracé, uniquement le véhicule avec un emoji.
+
+xml
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -259,16 +270,6 @@
                 <option value="truck">🚚 Camion</option>
                 <option value="motorcycle">🏍️ Moto</option>
             </select>
-
-            <label>Gravité de l'accident (1-5):</label>
-            <input type="range" id="accidentSeverity" min="1" max="5" value="3"
-                oninput="document.getElementById('accidentSeverityValue').textContent = this.value + '/5';">
-            <span class="slider-value" id="accidentSeverityValue">3/5</span>
-
-            <label>Longueur de zone impactée (m):</label>
-            <input type="range" id="accidentLength" min="50" max="500" value="150" step="10"
-                oninput="document.getElementById('accidentLengthValue').textContent = this.value + ' m';">
-            <span class="slider-value" id="accidentLengthValue">150 m</span>
             
             <div class="info-box">
                 <i class="fas fa-mouse"></i>
@@ -614,8 +615,6 @@
 
         // ============ AJOUTER ACCIDENT ============
         function addAccident(latlng) {
-            const severity = parseInt(document.getElementById('accidentSeverity').value);
-            const length = parseInt(document.getElementById('accidentLength').value);
             const vehicleImpact = document.getElementById('accidentVehicleType').value;
             const accidentId = 'accident_' + Date.now();
 
@@ -637,27 +636,11 @@
                 <div style="padding: 10px; color: #333;">
                     <b style="color:#E74C3C;">Accident #${accidents.length + 1}</b><br>
                     Véhicule impacté: ${vehicleImpact}<br>
-                    Gravité: ${severity}/5<br>
-                    Longueur impactée: ${length} m<br>
                     <button onclick="removeAccident('${accidentId}')" style="margin-top:8px;padding:5px 10px;background:#E74C3C;color:white;border:none;border-radius:4px;cursor:pointer;">Supprimer</button>
                 </div>
             `, { maxWidth: 260 }).addTo(fireMarkers);
 
-            const half = (length / 2) / 111000;
-            const line = L.polyline(
-                [
-                    [latlng.lat - half, latlng.lng],
-                    [latlng.lat + half, latlng.lng]
-                ],
-                {
-                    color: '#E74C3C',
-                    weight: 4,
-                    opacity: 0.8,
-                    dashArray: '8,4'
-                }
-            ).addTo(fireCircles);
-
-            accidents.push({ id: accidentId, latlng, severity, length, vehicleImpact, marker: accidentMarker, line });
+            accidents.push({ id: accidentId, latlng, vehicleImpact, marker: accidentMarker });
             updateStats();
         }
         
@@ -745,7 +728,6 @@
             const idx = accidents.findIndex(a => a.id === accidentId);
             if (idx > -1) {
                 accidents[idx].marker.remove();
-                accidents[idx].line.remove();
                 accidents.splice(idx, 1);
                 updateStats();
             }
@@ -778,7 +760,7 @@
         }
 
         function clearAllAccidents() {
-            accidents.forEach(a => { a.marker.remove(); a.line.remove(); });
+            accidents.forEach(a => { a.marker.remove(); });
             accidents = [];
             updateStats();
         }
@@ -848,3 +830,4 @@
     </script>
 </body>
 </html>
+Les accidents sont maintenant uniquement matér
