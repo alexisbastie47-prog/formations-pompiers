@@ -439,82 +439,80 @@
         let isSatelliteMode = false;
         
         // ============ MODES ============
-        function resetAllModes() {
-            isFireMode = false;
-            isAccidentMode = false;
-            isVehicleMode = false;
-            isEquipmentMode = false;
-            ['fire','accident','vehicle','equipment'].forEach(id => {
-                const btn = document.getElementById(id + 'ModeBtn');
-                const ind = document.getElementById(id + 'ModeIndicator');
-                if (btn) btn.classList.remove('active');
-                if (ind) ind.classList.remove('active');
-            });
-            map.style.cursor = 'grab';
-        }
+function resetAllModes() {
+    isFireMode = false;
+    isAccidentMode = false;
+    isVehicleMode = false;
+    isEquipmentMode = false;
 
-        function toggleFireMode() {
-            const newState = !isFireMode;
-            resetAllModes();
-            isFireMode = newState;
-            if (isFireMode) {
-                document.getElementById('fireModeBtn').classList.add('active');
-                document.getElementById('fireModeIndicator').classList.add('active');
-                map.style.cursor = 'crosshair';
-            }
-        }
+    ['fire','accident','vehicle','equipment'].forEach(id => {
+        const btn = document.getElementById(id + 'ModeBtn');
+        const ind = document.getElementById(id + 'ModeIndicator');
+        if (btn) btn.classList.remove('active');
+        if (ind) ind.classList.remove('active');
+    });
 
-        function toggleAccidentMode() {
-            const newState = !isAccidentMode;
-            resetAllModes();
-            isAccidentMode = newState;
-            if (isAccidentMode) {
-                document.getElementById('accidentModeBtn').classList.add('active');
-                document.getElementById('accidentModeIndicator').classList.add('active');
-                map.style.cursor = 'crosshair';
-            }
-        }
-        
-        function toggleVehicleMode() {
-            const newState = !isVehicleMode;
-            resetAllModes();
-            isVehicleMode = newState;
-            if (isVehicleMode) {
-                document.getElementById('vehicleModeBtn').classList.add('active');
-                document.getElementById('vehicleModeIndicator').classList.add('active');
-                map.style.cursor = 'crosshair';
-            }
-        }
+    // on ne touche pas au curseur Leaflet (géré par ses propres classes)
+}
 
-        function toggleEquipmentMode() {
-            const newState = !isEquipmentMode;
-            resetAllModes();
-            isEquipmentMode = newState;
-            if (isEquipmentMode) {
-                document.getElementById('equipmentModeBtn').classList.add('active');
-                document.getElementById('equipmentModeIndicator').classList.add('active');
-                map.style.cursor = 'crosshair';
-            }
-        }
-        
-        // ============ CLIC CARTE ============
-        map.on('click', function(e) {
-            if (isVehicleMode) {
-                addVehicle(e.latlng);
-                return;
-            }
-            if (isFireMode) {
-                addFire(e.latlng);
-                return;
-            }
-            if (isAccidentMode) {
-                addAccident(e.latlng);
-                return;
-            }
-            if (isEquipmentMode) {
-                addEquipment(e.latlng);
-            }
-        });
+function toggleFireMode() {
+    const newState = !isFireMode;
+    resetAllModes();
+    isFireMode = newState;
+    if (isFireMode) {
+        document.getElementById('fireModeBtn').classList.add('active');
+        document.getElementById('fireModeIndicator').classList.add('active');
+    }
+}
+
+function toggleAccidentMode() {
+    const newState = !isAccidentMode;
+    resetAllModes();
+    isAccidentMode = newState;
+    if (isAccidentMode) {
+        document.getElementById('accidentModeBtn').classList.add('active');
+        document.getElementById('accidentModeIndicator').classList.add('active');
+    }
+}
+
+function toggleVehicleMode() {
+    const newState = !isVehicleMode;
+    resetAllModes();
+    isVehicleMode = newState;
+    if (isVehicleMode) {
+        document.getElementById('vehicleModeBtn').classList.add('active');
+        document.getElementById('vehicleModeIndicator').classList.add('active');
+    }
+}
+
+function toggleEquipmentMode() {
+    const newState = !isEquipmentMode;
+    resetAllModes();
+    isEquipmentMode = newState;
+    if (isEquipmentMode) {
+        document.getElementById('equipmentModeBtn').classList.add('active');
+        document.getElementById('equipmentModeIndicator').classList.add('active');
+    }
+}
+
+// ============ CLIC CARTE ============
+map.on('click', function(e) {
+    if (isVehicleMode) {
+        addVehicle(e.latlng);
+        return;
+    }
+    if (isFireMode) {
+        addFire(e.latlng);
+        return;
+    }
+    if (isAccidentMode) {
+        addAccident(e.latlng);
+        return;
+    }
+    if (isEquipmentMode) {
+        addEquipment(e.latlng);
+    }
+});
         
         // ============ AJOUTER INCENDIE ============
         function addFire(latlng) {
