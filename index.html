@@ -234,16 +234,6 @@
                 <option value="agricultural">🌾 Agricole</option>
             </select>
             
-            <label>Intensité (1-5):</label>
-            <input type="range" id="fireIntensity" min="1" max="5" value="3" 
-                oninput="updateFireIntensityDisplay(this.value)">
-            <span class="slider-value" id="intensityValue">3/5</span>
-            
-            <label>Rayon d'action (m):</label>
-            <input type="range" id="fireRadius" min="50" max="500" value="100" step="10"
-                oninput="updateFireRadiusDisplay(this.value)">
-            <span class="slider-value" id="radiusValue">100 m</span>
-            
             <div class="info-box">
                 <i class="fas fa-mouse"></i>
                 Active le mode incendie puis clique sur la carte pour placer le feu.
@@ -570,8 +560,6 @@
         // ============ AJOUTER INCENDIE ============
         function addFire(latlng) {
             const fireType = document.getElementById('fireType').value;
-            const intensity = parseInt(document.getElementById('fireIntensity').value);
-            const radius = parseInt(document.getElementById('fireRadius').value);
             const fireId = 'fire_' + Date.now();
             
             if (!document.getElementById('fireAnimation')) {
@@ -596,7 +584,6 @@
                 })
             }).addTo(fireMarkers);
 
-            let circle = null;
             let polygon = null;
 
             if (fireType === 'wildfire') {
@@ -607,31 +594,21 @@
                     weight: 2,
                     dashArray: '5,5'
                 }).addTo(fireCircles);
-            } else {
-                circle = L.circle(latlng, {
-                    radius: radius,
-                    color: '#FF6B35',
-                    fillColor: '#FF6B35',
-                    fillOpacity: 0.2,
-                    weight: 2,
-                    dashArray: '5, 5'
-                }).addTo(fireCircles);
             }
 
             fireMarker.bindPopup(`
                 <div style="padding: 10px; color: #333;">
                     <b style="color: #FF6B35;">Incendie #${fires.length + 1}</b><br>
                     📍 Type: ${fireType}<br>
-                    💪 Intensité: ${intensity}/5<br>
                     ${fireType === 'wildfire'
                         ? `Contour manuel (feu de forêt)`
-                        : `📏 Rayon: ${radius} m`
+                        : `Point simple (sans rayon)`
                     }<br>
                     <button onclick="removeFire('${fireId}')" style="margin-top: 10px; padding: 5px 10px; background: #FF6B35; color: white; border: none; border-radius: 4px; cursor: pointer;">Supprimer</button>
                 </div>
             `, { maxWidth: 250 });
 
-            fires.push({ id: fireId, latlng, type: fireType, intensity, radius, marker: fireMarker, circle, polygon });
+            fires.push({ id: fireId, latlng, type: fireType, marker: fireMarker, polygon });
             updateStats();
         }
 
@@ -758,7 +735,6 @@
             const idx = fires.findIndex(f => f.id === fireId);
             if (idx > -1) {
                 if (fires[idx].marker) fires[idx].marker.remove();
-                if (fires[idx].circle) fires[idx].circle.remove();
                 if (fires[idx].polygon) fires[idx].polygon.remove();
                 fires.splice(idx, 1);
                 updateStats();
@@ -795,7 +771,6 @@
         function clearAllFires() {
             fires.forEach(f => {
                 if (f.marker) f.marker.remove();
-                if (f.circle) f.circle.remove();
                 if (f.polygon) f.polygon.remove();
             });
             fires = [];
@@ -856,14 +831,6 @@
             map.setView([44.316, 0.085], 14);
         }
         
-        function updateFireIntensityDisplay(value) {
-            document.getElementById('intensityValue').textContent = value + '/5';
-        }
-        
-        function updateFireRadiusDisplay(value) {
-            document.getElementById('radiusValue').textContent = value + ' m';
-        }
-
         // ============ OUVERTURE VUE 3D ============
         function open3DView() {
             window.open('terrain3D.html', '_blank');
