@@ -202,67 +202,82 @@
             </div>
         </div>
         
-        <!-- Section Événement (Incendie / Accident) -->
+        <!-- Section Incendie -->
         <div class="section">
-            <h3><i class="fas fa-fire"></i> Événement</h3>
+            <h3><i class="fas fa-fire"></i> Incendie</h3>
 
-            <label>Type d'événement :</label>
-            <select id="eventMode">
-                <option value="fire">🔥 Incendie</option>
-                <option value="accident">🚗 Accident de la route</option>
+            <label>Type d'incendie:</label>
+            <select id="fireType">
+                <option value="residential">🏠 Habitation</option>
+                <option value="commercial">🏢 Commerce</option>
+                <option value="wildfire">🌲 Feu de forêt</option>
+                <option value="vehicle">🚗 Véhicule</option>
+                <option value="industrial">🏭 Industriel (ICPE)</option>
+                <option value="agricultural">🌾 Agricole</option>
             </select>
-
-            <div id="fireParams">
-                <label>Type d'incendie:</label>
-                <select id="fireType">
-                    <option value="residential">🏠 Habitation</option>
-                    <option value="commercial">🏢 Commerce</option>
-                    <option value="wildfire">🌲 Feu de forêt</option>
-                    <option value="vehicle">🚗 Véhicule</option>
-                    <option value="industrial">🏭 Industriel (ICPE)</option>
-                    <option value="agricultural">🌾 Agricole</option>
-                </select>
-                
-                <label>Intensité (1-5):</label>
-                <input type="range" id="fireIntensity" min="1" max="5" value="3" 
-                    oninput="updateFireIntensityDisplay(this.value)">
-                <span class="slider-value" id="intensityValue">3/5</span>
-                
-                <label>Rayon d'action (m):</label>
-                <input type="range" id="fireRadius" min="50" max="500" value="100" step="10"
-                    oninput="updateFireRadiusDisplay(this.value)">
-                <span class="slider-value" id="radiusValue">100 m</span>
-            </div>
-
-            <div id="accidentParams" style="display:none;">
-                <label>Gravité de l'accident (1-5):</label>
-                <input type="range" id="accidentSeverity" min="1" max="5" value="3"
-                    oninput="document.getElementById('accidentSeverityValue').textContent = this.value + '/5';">
-                <span class="slider-value" id="accidentSeverityValue">3/5</span>
-
-                <label>Longueur de zone impactée (m):</label>
-                <input type="range" id="accidentLength" min="50" max="500" value="150" step="10"
-                    oninput="document.getElementById('accidentLengthValue').textContent = this.value + ' m';">
-                <span class="slider-value" id="accidentLengthValue">150 m</span>
-            </div>
+            
+            <label>Intensité (1-5):</label>
+            <input type="range" id="fireIntensity" min="1" max="5" value="3" 
+                oninput="updateFireIntensityDisplay(this.value)">
+            <span class="slider-value" id="intensityValue">3/5</span>
+            
+            <label>Rayon d'action (m):</label>
+            <input type="range" id="fireRadius" min="50" max="500" value="100" step="10"
+                oninput="updateFireRadiusDisplay(this.value)">
+            <span class="slider-value" id="radiusValue">100 m</span>
             
             <div class="info-box">
                 <i class="fas fa-mouse"></i>
-                Sélectionne le type d'événement, puis clique sur la carte pour le placer.
+                Active le mode incendie puis clique sur la carte pour placer le feu.
             </div>
             
             <div class="btn-group">
-                <button class="btn" id="eventModeBtn" onclick="toggleEventMode()">
-                    <span class="mode-indicator" id="eventModeIndicator"></span>
-                    Mode Événement
+                <button class="btn" id="fireModeBtn" onclick="toggleFireMode()">
+                    <span class="mode-indicator" id="fireModeIndicator"></span>
+                    Mode Incendie
                 </button>
-                <button class="btn danger" onclick="clearAllEvents()">Effacer événements</button>
+                <button class="btn danger" onclick="clearAllFires()">Effacer incendies</button>
+            </div>
+        </div>
+
+        <!-- Section Accident de la route -->
+        <div class="section">
+            <h3><i class="fas fa-car-crash"></i> Accident de la route</h3>
+
+            <label>Véhicule impacté :</label>
+            <select id="accidentVehicleType">
+                <option value="car">🚗 Voiture</option>
+                <option value="truck">🚚 Camion</option>
+                <option value="motorcycle">🏍️ Moto</option>
+            </select>
+
+            <label>Gravité de l'accident (1-5):</label>
+            <input type="range" id="accidentSeverity" min="1" max="5" value="3"
+                oninput="document.getElementById('accidentSeverityValue').textContent = this.value + '/5';">
+            <span class="slider-value" id="accidentSeverityValue">3/5</span>
+
+            <label>Longueur de zone impactée (m):</label>
+            <input type="range" id="accidentLength" min="50" max="500" value="150" step="10"
+                oninput="document.getElementById('accidentLengthValue').textContent = this.value + ' m';">
+            <span class="slider-value" id="accidentLengthValue">150 m</span>
+            
+            <div class="info-box">
+                <i class="fas fa-mouse"></i>
+                Active le mode accident puis clique sur la carte pour placer l'accident.
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn" id="accidentModeBtn" onclick="toggleAccidentMode()">
+                    <span class="mode-indicator" id="accidentModeIndicator"></span>
+                    Mode Accident
+                </button>
+                <button class="btn danger" onclick="clearAllAccidents()">Effacer accidents</button>
             </div>
         </div>
         
-        <!-- Section Véhicules -->
+        <!-- Section Véhicules pompiers -->
         <div class="section">
-            <h3><i class="fas fa-truck"></i> Ajouter un Véhicule</h3>
+            <h3><i class="fas fa-truck"></i> Véhicules de secours</h3>
             
             <label>Type de véhicule:</label>
             <select id="vehicleType">
@@ -271,13 +286,14 @@
                 <option value="CCFS">🚒 CCFS (Structure lourde)</option>
                 <option value="VSAV">🚑 VSAV (Secours)</option>
                 <option value="VLI">🚙 VLI (Intervention légère)</option>
+                <option value="VSR">🛠️ VSR (Secours Routier)</option>
                 <option value="CMD">📡 Poste de Commandement</option>
                 <option value="DECA">🚒 DECA (Déploiement)</option>
             </select>
             
             <div class="info-box">
-                <i class="fas fa-mouse"></i> Cliquez sur la carte pour ajouter un véhicule
-                <br><i class="fas fa-hand-fist" style="margin-right: 4px;"></i> Drag pour déplacer
+                <i class="fas fa-mouse"></i> Active le mode véhicule puis clique sur la carte pour ajouter un engin.
+                <br><i class="fas fa-hand-fist" style="margin-right: 4px;"></i> Drag pour déplacer.
             </div>
             
             <div class="btn-group">
@@ -285,7 +301,7 @@
                     <span class="mode-indicator" id="vehicleModeIndicator"></span>
                     Mode Véhicule
                 </button>
-                <button class="btn danger" onclick="clearAllVehicles()">Effacer</button>
+                <button class="btn danger" onclick="clearAllVehicles()">Effacer véhicules</button>
             </div>
         </div>
         
@@ -316,6 +332,10 @@
                     <div class="stat-label">Incendies</div>
                 </div>
                 <div class="stat-item">
+                    <div class="stat-number" id="accidentCount">0</div>
+                    <div class="stat-label">Accidents</div>
+                </div>
+                <div class="stat-item">
                     <div class="stat-number" id="vehicleCount">0</div>
                     <div class="stat-label">Véhicules</div>
                 </div>
@@ -330,8 +350,12 @@
             <span>Incendie actif</span>
         </div>
         <div class="legend-item">
+            <i class="fas fa-car-crash" style="color:#E74C3C;"></i>
+            <span>Accident de la route</span>
+        </div>
+        <div class="legend-item">
             <div class="legend-color" style="background: rgba(255, 107, 53, 0.3); border: 2px dashed #FF6B35;"></div>
-            <span>Zone affectée</span>
+            <span>Zone / tronçon impacté</span>
         </div>
         <div class="legend-item">
             <i class="fas fa-truck" style="color: #FFD700;"></i>
@@ -357,38 +381,51 @@
         const vehicleMarkers = L.featureGroup().addTo(map);
         const fireCircles = L.featureGroup().addTo(map);
         
-        let isEventMode = false;
+        let isFireMode = false;
+        let isAccidentMode = false;
         let isVehicleMode = false;
         let fires = [];
         let accidents = [];
         let vehicles = [];
         let isSatelliteMode = false;
         
-        // ============ CHANGEMENT TYPE ÉVÉNEMENT ============
-        document.getElementById('eventMode').addEventListener('change', function () {
-            const mode = this.value;
-            document.getElementById('fireParams').style.display = mode === 'fire' ? 'block' : 'none';
-            document.getElementById('accidentParams').style.display = mode === 'accident' ? 'block' : 'none';
-        });
-
         // ============ MODES ============
-        function toggleEventMode() {
-            isEventMode = !isEventMode;
+        function toggleFireMode() {
+            isFireMode = !isFireMode;
+            isAccidentMode = false;
             isVehicleMode = false;
-            document.getElementById('eventModeBtn').classList.toggle('active');
+            document.getElementById('fireModeBtn').classList.toggle('active');
+            document.getElementById('accidentModeBtn').classList.remove('active');
             document.getElementById('vehicleModeBtn').classList.remove('active');
-            document.getElementById('eventModeIndicator').classList.toggle('active');
+            document.getElementById('fireModeIndicator').classList.toggle('active');
+            document.getElementById('accidentModeIndicator').classList.remove('active');
             document.getElementById('vehicleModeIndicator').classList.remove('active');
-            map.style.cursor = isEventMode ? 'crosshair' : 'grab';
+            map.style.cursor = isFireMode ? 'crosshair' : 'grab';
+        }
+
+        function toggleAccidentMode() {
+            isAccidentMode = !isAccidentMode;
+            isFireMode = false;
+            isVehicleMode = false;
+            document.getElementById('accidentModeBtn').classList.toggle('active');
+            document.getElementById('fireModeBtn').classList.remove('active');
+            document.getElementById('vehicleModeBtn').classList.remove('active');
+            document.getElementById('accidentModeIndicator').classList.toggle('active');
+            document.getElementById('fireModeIndicator').classList.remove('active');
+            document.getElementById('vehicleModeIndicator').classList.remove('active');
+            map.style.cursor = isAccidentMode ? 'crosshair' : 'grab';
         }
         
         function toggleVehicleMode() {
             isVehicleMode = !isVehicleMode;
-            isEventMode = false;
+            isFireMode = false;
+            isAccidentMode = false;
             document.getElementById('vehicleModeBtn').classList.toggle('active');
-            document.getElementById('eventModeBtn').classList.remove('active');
+            document.getElementById('fireModeBtn').classList.remove('active');
+            document.getElementById('accidentModeBtn').classList.remove('active');
             document.getElementById('vehicleModeIndicator').classList.toggle('active');
-            document.getElementById('eventModeIndicator').classList.remove('active');
+            document.getElementById('fireModeIndicator').classList.remove('active');
+            document.getElementById('accidentModeIndicator').classList.remove('active');
             map.style.cursor = isVehicleMode ? 'crosshair' : 'grab';
         }
         
@@ -398,10 +435,12 @@
                 addVehicle(e.latlng);
                 return;
             }
-            if (isEventMode) {
-                const mode = document.getElementById('eventMode').value;
-                if (mode === 'fire') addFire(e.latlng);
-                else if (mode === 'accident') addAccident(e.latlng);
+            if (isFireMode) {
+                addFire(e.latlng);
+                return;
+            }
+            if (isAccidentMode) {
+                addAccident(e.latlng);
             }
         });
         
@@ -456,23 +495,32 @@
         function addAccident(latlng) {
             const severity = parseInt(document.getElementById('accidentSeverity').value);
             const length = parseInt(document.getElementById('accidentLength').value);
+            const vehicleImpact = document.getElementById('accidentVehicleType').value;
             const accidentId = 'accident_' + Date.now();
+
+            const icons = {
+                car: '🚗',
+                truck: '🚚',
+                motorcycle: '🏍️'
+            };
+            const icon = icons[vehicleImpact] || '🚗';
 
             const accidentMarker = L.marker(latlng, {
                 icon: L.divIcon({
                     className: 'accident-marker',
-                    html: `<div style="font-size: 26px; filter: drop-shadow(0 0 4px rgba(200,0,0,0.8));">🚗</div>`,
+                    html: `<div style="font-size: 26px; filter: drop-shadow(0 0 4px rgba(200,0,0,0.8));">${icon}</div>`,
                     iconSize: [30, 30],
                     iconAnchor: [15, 15]
                 })
             }).bindPopup(`
                 <div style="padding: 10px; color: #333;">
                     <b style="color:#E74C3C;">Accident #${accidents.length + 1}</b><br>
+                    Véhicule impacté: ${vehicleImpact}<br>
                     Gravité: ${severity}/5<br>
                     Longueur impactée: ${length} m<br>
                     <button onclick="removeAccident('${accidentId}')" style="margin-top:8px;padding:5px 10px;background:#E74C3C;color:white;border:none;border-radius:4px;cursor:pointer;">Supprimer</button>
                 </div>
-            `, { maxWidth: 250 }).addTo(fireMarkers);
+            `, { maxWidth: 260 }).addTo(fireMarkers);
 
             const half = (length / 2) / 111000; // approx degrés
             const line = L.polyline(
@@ -488,7 +536,7 @@
                 }
             ).addTo(fireCircles);
 
-            accidents.push({ id: accidentId, latlng, severity, length, marker: accidentMarker, line });
+            accidents.push({ id: accidentId, latlng, severity, length, vehicleImpact, marker: accidentMarker, line });
             updateStats();
         }
         
@@ -560,20 +608,16 @@
             updateStats();
         }
 
-        function clearAllEvents() {
-            clearAllFires();
-            clearAllAccidents();
-        }
-        
         function clearAllVehicles() {
             vehicles.forEach(v => v.marker.remove());
             vehicles = [];
             updateStats();
         }
-        
+
         function clearAllSimulation() {
             if (confirm('⚠️ Êtes-vous sûr ? Cela effacera TOUS les éléments de la simulation.')) {
-                clearAllEvents();
+                clearAllFires();
+                clearAllAccidents();
                 clearAllVehicles();
             }
         }
@@ -581,6 +625,7 @@
         // ============ UTILITAIRES ============
         function updateStats() {
             document.getElementById('fireCount').textContent = fires.length;
+            document.getElementById('accidentCount').textContent = accidents.length;
             document.getElementById('vehicleCount').textContent = vehicles.length;
         }
         
