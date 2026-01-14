@@ -410,7 +410,11 @@
 
     <script>
         // ============ INITIALISATION ============
-        const map = L.map('mapContainer').setView([44.316, 0.085], 14);
+        const map = L.map('mapContainer', {
+            center: [44.316, 0.085],
+            zoom: 14,
+            doubleClickZoom: false
+        });
         
         const osmLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap',
@@ -498,8 +502,10 @@
         
         // ============ CLIC CARTE ============
         map.on('click', function(e) {
+            const fireType = document.getElementById('fireType').value;
+
             // dessin du contour feu de forêt en cours
-            if (isDrawingWildfire) {
+            if (isDrawingWildfire && fireType === 'wildfire') {
                 currentWildfireLatLngs.push(e.latlng);
                 if (currentWildfirePolyline) {
                     currentWildfirePolyline.setLatLngs(currentWildfireLatLngs);
@@ -526,7 +532,8 @@
 
         // fermeture du contour feu de forêt
         map.on('dblclick', function(e) {
-            if (!isDrawingWildfire) return;
+            const fireType = document.getElementById('fireType').value;
+            if (!isDrawingWildfire || fireType !== 'wildfire') return;
             if (currentWildfireLatLngs.length < 3) {
                 isDrawingWildfire = false;
                 if (currentWildfirePolyline) {
