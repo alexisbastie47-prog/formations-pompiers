@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -359,6 +360,9 @@
                 </button>
                 <button class="btn" onclick="resetView()">
                     <i class="fas fa-expand"></i> Réinitialiser
+                </button>
+                <button class="btn" onclick="open3DView()">
+                    <i class="fas fa-globe"></i> Vue 3D terrain
                 </button>
             </div>
             
@@ -782,6 +786,11 @@
         
         function updateFireRadiusDisplay(value) {
             document.getElementById('radiusValue').textContent = value + ' m';
+        }
+
+        // ============ OUVERTURE VUE 3D ============
+        function open3DView() {
+            window.open('terrain3D.html', '_blank');
         }
 
         // ============ TOGGLE PANNEAU ============
