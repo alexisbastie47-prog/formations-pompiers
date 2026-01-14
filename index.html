@@ -540,22 +540,19 @@
             updateStats();
         }
         
-        // ============ AJOUTER VÉHICULE ============
-        function addVehicle(latlng) {
-            const vehicleType = document.getElementById('vehicleType').value;
-            const vehicleId = 'vehicle_' + Date.now();
-            
-           function addVehicle(latlng) {
+       // ============ AJOUTER VÉHICULE ============
+function addVehicle(latlng) {
     const vehicleType = document.getElementById('vehicleType').value;
     const vehicleId = 'vehicle_' + Date.now();
 
+    // Choix des icônes selon le type
     const vehicleIcons = {
         FPT: '🚒',
         CCF: '🚒',
         CCFS: '🚒',
         VSAV: '🚑',
         VLI: '🚙',
-        VSR: '🛠️',   
+        VSR: '🛠️',   // Véhicule de Secours Routier
         CMD: '📡',
         DECA: '🚒'
     };
@@ -568,20 +565,16 @@
             iconSize: [32, 32],
             iconAnchor: [16, 16]
         })
-    })/* … reste inchangé … */;
+    }).bindPopup(`
+        <div style="padding: 10px; color: #333;">
+            <b style="color: #FFD700;">${vehicleType}</b><br>
+            <button onclick="removeVehicle('${vehicleId}')" style="margin-top: 8px; padding: 5px 10px; background: #E74C3C; color: white; border: none; border-radius: 4px; cursor: pointer;">Supprimer</button>
+        </div>
+    `, { maxWidth: 200 }).addTo(vehicleMarkers);
+
+    vehicles.push({ id: vehicleId, type: vehicleType, marker: vehicleMarker, latlng });
+    updateStats();
 }
-            }).bindPopup(`
-                <div style="padding: 10px; color: #333;">
-                    <b style="color: #FFD700;">${vehicleType}</b><br>
-                    <button onclick="removeVehicle('${vehicleId}')" style="margin-top: 8px; padding: 5px 10px; background: #E74C3C; color: white; border: none; border-radius: 4px; cursor: pointer;">Supprimer</button>
-                </div>
-            `, { maxWidth: 200 }).addTo(vehicleMarkers);
-            
-            vehicleMarker.dragging.enable();
-            
-            vehicles.push({ id: vehicleId, type: vehicleType, marker: vehicleMarker, latlng });
-            updateStats();
-        }
         
         // ============ SUPPRESSION ============
         window.removeFire = function(fireId) {
