@@ -274,40 +274,68 @@
             </div>
         </div>
         
-       <!-- Section Véhicules pompiers -->
-<div class="section">
-    <h3><i class="fas fa-truck"></i> Véhicules de secours</h3>
-    
-    <label>Type de véhicule:</label>
-    <select id="vehicleType">
-        <option value="CCF">🚒 CCF</option>
-        <option value="FPT">🚒 FPT</option>
-        <option value="VSAV">🚑 VSAV</option>
-        <option value="VLI">🚙 VLI</option>
-        <option value="VLR">🚗 VLR</option>
-        <option value="MEA">🚒 MEA</option>
-        <option value="VSR">🛠️ VSR</option>
-        <option value="CCGC">🚒 CCGC</option>
-        <option value="VLRTT">🚙 VLRTT</option>
-        <option value="PCC">📡 PCC</option>
-        <option value="VSEC">🚧 VSEC</option>
-    </select>
+        <!-- Section Véhicules pompiers -->
+        <div class="section">
+            <h3><i class="fas fa-truck"></i> Véhicules de secours</h3>
+            
+            <label>Type de véhicule:</label>
+            <select id="vehicleType">
+                <option value="CCF">🚒 CCF</option>
+                <option value="FPT">🚒 FPT</option>
+                <option value="VSAV">🚑 VSAV</option>
+                <option value="VLI">🚙 VLI</option>
+                <option value="VLR">🚗 VLR</option>
+                <option value="MEA">🚒 MEA</option>
+                <option value="VSR">🛠️ VSR</option>
+                <option value="CCGC">🚒 CCGC</option>
+                <option value="VLRTT">🚙 VLRTT</option>
+                <option value="PCC">📡 PCC</option>
+                <option value="VSEC">🚧 VSEC</option>
+            </select>
 
-    <label>Nom de l'engin (CIS) :</label>
-    <input type="text" id="vehicleName" placeholder="Ex : Casteljaloux">
+            <label>Nom de l'engin (CIS) :</label>
+            <input type="text" id="vehicleName" placeholder="Ex : Casteljaloux">
 
-    <div class="info-box">
-        <i class="fas fa-mouse"></i> Active le mode véhicule puis clique sur la carte pour ajouter un engin.
-    </div>
-    
-    <div class="btn-group">
-        <button class="btn" id="vehicleModeBtn" onclick="toggleVehicleMode()">
-            <span class="mode-indicator" id="vehicleModeIndicator"></span>
-            Mode Véhicule
-        </button>
-        <button class="btn danger" onclick="clearAllVehicles()">Effacer véhicules</button>
-    </div>
-</div>
+            <div class="info-box">
+                <i class="fas fa-mouse"></i> Active le mode véhicule puis clique sur la carte pour ajouter un engin.
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn" id="vehicleModeBtn" onclick="toggleVehicleMode()">
+                    <span class="mode-indicator" id="vehicleModeIndicator"></span>
+                    Mode Véhicule
+                </button>
+                <button class="btn danger" onclick="clearAllVehicles()">Effacer véhicules</button>
+            </div>
+        </div>
+
+        <!-- Section Services -->
+        <div class="section">
+            <h3><i class="fas fa-users"></i> Services</h3>
+            
+            <label>Type de service :</label>
+            <select id="serviceType">
+                <option value="elu">🧑‍💼 Élu</option>
+                <option value="dfci">🌲 DFCI</option>
+                <option value="smur">⚕️ SMUR</option>
+                <option value="police">🚓 Police / Gendarmerie</option>
+                <option value="helico">🚁 Hélicoptère</option>
+                <option value="canadair">✈️ Canadair</option>
+            </select>
+
+            <div class="info-box">
+                <i class="fas fa-mouse"></i>
+                Active le mode services puis clique sur la carte pour placer l'icône.
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn" id="serviceModeBtn" onclick="toggleServiceMode()">
+                    <span class="mode-indicator" id="serviceModeIndicator"></span>
+                    Mode Services
+                </button>
+                <button class="btn danger" onclick="clearAllServices()">Effacer services</button>
+            </div>
+        </div>
 
         <!-- Section Matériel -->
         <div class="section">
@@ -415,15 +443,18 @@
         const fireMarkers = L.featureGroup().addTo(map);
         const vehicleMarkers = L.featureGroup().addTo(map);
         const fireCircles = L.featureGroup().addTo(map);
+        const serviceMarkers = L.featureGroup().addTo(map);
         
         let isFireMode = false;
         let isAccidentMode = false;
         let isVehicleMode = false;
         let isEquipmentMode = false;
+        let isServiceMode = false;
         let fires = [];
         let accidents = [];
         let vehicles = [];
         let equipment = [];
+        let services = [];
         let isSatelliteMode = false;
 
         // dessin feu de forêt
@@ -437,8 +468,9 @@
             isAccidentMode = false;
             isVehicleMode = false;
             isEquipmentMode = false;
+            isServiceMode = false;
 
-            ['fire','accident','vehicle','equipment'].forEach(id => {
+            ['fire','accident','vehicle','equipment','service'].forEach(id => {
                 const btn = document.getElementById(id + 'ModeBtn');
                 const ind = document.getElementById(id + 'ModeIndicator');
                 if (btn) btn.classList.remove('active');
@@ -485,12 +517,21 @@
                 document.getElementById('equipmentModeIndicator').classList.add('active');
             }
         }
+
+        function toggleServiceMode() {
+            const newState = !isServiceMode;
+            resetAllModes();
+            isServiceMode = newState;
+            if (isServiceMode) {
+                document.getElementById('serviceModeBtn').classList.add('active');
+                document.getElementById('serviceModeIndicator').classList.add('active');
+            }
+        }
         
         // ============ CLIC CARTE ============
         map.on('click', function(e) {
             const fireType = document.getElementById('fireType').value;
 
-            // dessin du contour feu de forêt en cours
             if (isDrawingWildfire && fireType === 'wildfire') {
                 currentWildfireLatLngs.push(e.latlng);
                 if (currentWildfirePolyline) {
@@ -513,6 +554,11 @@
             }
             if (isEquipmentMode) {
                 addEquipment(e.latlng);
+                return;
+            }
+            if (isServiceMode) {
+                addService(e.latlng);
+                return;
             }
         });
 
@@ -568,19 +614,18 @@
     }
     .fire-marker > div { animation: burn 0.6s infinite; }
 `;
-
                 document.head.appendChild(style);
             }
             
             const fireMarker = L.marker(latlng, {
-    icon: L.divIcon({
-        className: 'fire-marker',
-        html: `<div style="font-size: 28px; filter: drop-shadow(0 0 4px rgba(255, 107, 53, 0.8));">🔥</div>`,
-        iconSize: [28, 28],
-        iconAnchor: [14, 14],    // centre de l'emoji
-        popupAnchor: [0, -14]
-    })
-}).addTo(fireMarkers);
+                icon: L.divIcon({
+                    className: 'fire-marker',
+                    html: `<div style="font-size: 28px; filter: drop-shadow(0 0 4px rgba(255, 107, 53, 0.8));">🔥</div>`,
+                    iconSize: [28, 28],
+                    iconAnchor: [14, 14],
+                    popupAnchor: [0, -14]
+                })
+            }).addTo(fireMarkers);
             let polygon = null;
 
             if (fireType === 'wildfire') {
@@ -642,42 +687,85 @@
         
         // ============ AJOUTER VÉHICULE ============
         function addVehicle(latlng) {
-    const vehicleType = document.getElementById('vehicleType').value;
-    const vehicleName = document.getElementById('vehicleName').value.trim();
-    const vehicleId = 'vehicle_' + Date.now();
+            const vehicleType = document.getElementById('vehicleType').value;
+            const vehicleName = document.getElementById('vehicleName').value.trim();
+            const vehicleId = 'vehicle_' + Date.now();
 
-    const vehicleIcons = {
-        CCF:  '🚒',
-        FPT:  '🚒',
-        VSAV: '🚑',
-        VLI:  '🚙',
-        VLR:  '🚗',
-        MEA:  '🚒',
-        VSR:  '🛠️',
-        CCGC: '🚒',
-        VLRTT:'🚙',
-        PCC:  '📡',
-        VSEC: '🚧'
-    };
-    const iconChar = vehicleIcons[vehicleType] || '🚒';
+            const vehicleIcons = {
+                CCF:  '🚒',
+                FPT:  '🚒',
+                VSAV: '🚑',
+                VLI:  '🚙',
+                VLR:  '🚗',
+                MEA:  '🚒',
+                VSR:  '🛠️',
+                CCGC: '🚒',
+                VLRTT:'🚙',
+                PCC:  '📡',
+                VSEC: '🚧'
+            };
+            const iconChar = vehicleIcons[vehicleType] || '🚒';
 
-    const vehicleMarker = L.marker(latlng, {
-        icon: L.divIcon({
-            className: 'vehicle-marker',
-            html: `<div style="font-size: 26px; filter: drop-shadow(0 0 3px rgba(255, 215, 0, 0.6));">${iconChar}</div>`,
-            iconSize: [32, 32],
-            iconAnchor: [16, 16]
-        })
-    }).bindPopup(`
-        <div style="padding: 10px; color: #333;">
-            <b style="color: #FFD700;">${vehicleType}${vehicleName ? ' - ' + vehicleName : ''}</b><br>
-            <button onclick="removeVehicle('${vehicleId}')" style="margin-top: 8px; padding: 5px 10px; background: #E74C3C; color: white; border: none; border-radius: 4px; cursor: pointer;">Supprimer</button>
-        </div>
-    `, { maxWidth: 220 }).addTo(vehicleMarkers);
+            const vehicleMarker = L.marker(latlng, {
+                icon: L.divIcon({
+                    className: 'vehicle-marker',
+                    html: `<div style="font-size: 26px; filter: drop-shadow(0 0 3px rgba(255, 215, 0, 0.6));">${iconChar}</div>`,
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16]
+                })
+            }).bindPopup(`
+                <div style="padding: 10px; color: #333;">
+                    <b style="color: #FFD700;">${vehicleType}${vehicleName ? ' - ' + vehicleName : ''}</b><br>
+                    <button onclick="removeVehicle('${vehicleId}')" style="margin-top: 8px; padding: 5px 10px; background: #E74C3C; color: white; border: none; border-radius: 4px; cursor: pointer;">Supprimer</button>
+                </div>
+            `, { maxWidth: 220 }).addTo(vehicleMarkers);
 
-    vehicles.push({ id: vehicleId, type: vehicleType, name: vehicleName, marker: vehicleMarker, latlng });
-    updateStats();
-}
+            vehicles.push({ id: vehicleId, type: vehicleType, name: vehicleName, marker: vehicleMarker, latlng });
+            updateStats();
+        }
+
+        // ============ AJOUTER SERVICE ============
+        function addService(latlng) {
+            const serviceType = document.getElementById('serviceType').value;
+            const serviceId = 'service_' + Date.now();
+
+            const serviceIcons = {
+                elu:      '🧑‍💼',
+                dfci:     '🌲',
+                smur:     '⚕️',
+                police:   '🚓',
+                helico:   '🚁',
+                canadair: '✈️'
+            };
+            const labels = {
+                elu:      'Élu',
+                dfci:     'DFCI',
+                smur:     'SMUR',
+                police:   'Police / Gendarmerie',
+                helico:   'Hélicoptère',
+                canadair: 'Canadair'
+            };
+
+            const iconChar = serviceIcons[serviceType] || '❓';
+            const label = labels[serviceType] || serviceType;
+
+            const serviceMarker = L.marker(latlng, {
+                icon: L.divIcon({
+                    className: 'service-marker',
+                    html: `<div style="font-size: 24px; filter: drop-shadow(0 0 3px rgba(255,255,255,0.7));">${iconChar}</div>`,
+                    iconSize: [28, 28],
+                    iconAnchor: [14, 14]
+                })
+            }).bindPopup(`
+                <div style="padding: 10px; color: #333;">
+                    <b>${label}</b><br>
+                    <button onclick="removeService('${serviceId}')" style="margin-top:8px;padding:5px 10px;background:#E74C3C;color:white;border:none;border-radius:4px;cursor:pointer;">Supprimer</button>
+                </div>
+            `, { maxWidth: 220 }).addTo(serviceMarkers);
+
+            services.push({ id: serviceId, type: serviceType, marker: serviceMarker, latlng });
+        }
+
         // ============ AJOUTER MATÉRIEL ============
         function addEquipment(latlng) {
             const equipmentType = document.getElementById('equipmentType').value;
@@ -748,6 +836,14 @@
                 equipment.splice(idx, 1);
             }
         };
+
+        window.removeService = function(serviceId) {
+            const idx = services.findIndex(s => s.id === serviceId);
+            if (idx > -1) {
+                services[idx].marker.remove();
+                services.splice(idx, 1);
+            }
+        };
         
         function clearAllFires() {
             fires.forEach(f => {
@@ -775,12 +871,18 @@
             equipment = [];
         }
 
+        function clearAllServices() {
+            services.forEach(s => s.marker.remove());
+            services = [];
+        }
+
         function clearAllSimulation() {
             if (confirm('⚠️ Êtes-vous sûr ? Cela effacera TOUS les éléments de la simulation.')) {
                 clearAllFires();
                 clearAllAccidents();
                 clearAllVehicles();
                 clearAllEquipment();
+                clearAllServices();
             }
         }
         
